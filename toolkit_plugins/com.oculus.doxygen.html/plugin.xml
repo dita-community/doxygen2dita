@@ -1,0 +1,21 @@
+<!-- 
+  Oculus-branded HTML rendering overrides to handle DITA files
+  produced by the doxygen-to-DITA transform.
+  
+  Copyright (c) 2015 Oculus
+  
+  Handles the doxygen-specific sectiondiv and related elements
+  in order to produce an HTML result that emulates the 
+  HTML produced directly by the doxygen tool.
+  -->
+<plugin id="com.oculus.doxygen.html">
+  <require plugin="org.dita.xhtml"/> 
+  
+  <feature extension="package.support.name" value="Eliot Kimber"/>
+  <feature extension="package.support.email" value="ekimber@contrext.com"/>
+  
+  <feature extension="dita.xsl.xhtml"
+      value="xsl/doxygen2html.xsl" type="file"
+  />
+      
+</plugin>
