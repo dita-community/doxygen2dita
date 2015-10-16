@@ -91,7 +91,7 @@
     
 <!--    <xsl:message> + [INFO] Doxygen XML-to-DITA tranform...</xsl:message>-->
 <!--    <xsl:message> + [INFO] Output directory=<xsl:value-of select="$outdir"/></xsl:message>-->
-    
+
     <xsl:apply-templates/>
     
   </xsl:template>
@@ -100,7 +100,7 @@
     <map>
       <title><xsl:value-of select="$mapTitle"/></title>
       <topicgroup><xsl:comment> Key definitions </xsl:comment>
-        <xsl:apply-templates mode="generateKeyDefinitions" select="."/>
+          <xsl:apply-templates mode="generateKeyDefinitions" select="."/>
       </topicgroup>
       <topicgroup><xsl:comment> Publication body </xsl:comment>
         <xsl:apply-templates mode="generateTopicrefs" select="."/>

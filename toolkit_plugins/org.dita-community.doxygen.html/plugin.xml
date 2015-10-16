@@ -13,9 +13,10 @@
   
   <feature extension="package.support.name" value="Eliot Kimber"/>
   <feature extension="package.support.email" value="ekimber@contrext.com"/>
-  
-  <feature extension="dita.xsl.xhtml"
-      value="xsl/doxygen2html.xsl" type="file"
-  />
+
+  <feature extension="dita.xsl.xhtml" value="xsl/doxygen2html.xsl" type="file"/>
+
+  <feature extension="dita.conductor.target.relative" value="conductor.xml" type="file"/>
+  <feature extension="depend.preprocess.copy-files.pre" value="doxygen-copy"/>
       
 </plugin>

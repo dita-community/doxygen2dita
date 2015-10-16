@@ -52,9 +52,9 @@
     </xsl:variable>
     
     <xsl:choose>
-      <xsl:when test="matches($sourceDocBodyText, '^\s*$')">
+      <!--<xsl:when test="matches($sourceDocBodyText, '^\s*$')">-->
 <!--        <xsl:message> + [INFO] Source doc "<xsl:value-of select="$sourceURI"/>" has no text, skipping.</xsl:message>-->
-      </xsl:when>
+      <!--</xsl:when>-->
       <xsl:when test="@kind = ('page')">
         <xsl:result-document href="{$resultURI}" format="topic">
           <xsl:apply-templates select="$sourceDoc"/>
@@ -252,10 +252,13 @@
   </xsl:template>
   
   <xsl:template match="includes">
+    <section>
     <ph outputclass="{name(.)}">
       <xsl:text>#include </xsl:text>
       <xsl:apply-templates mode="makeIncludeFileref" select="."/>
-    </ph><xsl:text>&#x0a;</xsl:text>
+    </ph>
+    </section>
+      <xsl:text>&#x0a;</xsl:text>
   </xsl:template>
   
   <xsl:template mode="makeIncludeFileref" match="includes[@local= ('yes')]" priority="10">   
