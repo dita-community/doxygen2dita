@@ -101,16 +101,22 @@
     <reference id="{local:getId(.)}">
       <xsl:apply-templates mode="topicTitle" select="."/>
       <xsl:apply-templates mode="shortDesc" select="."/>
-      <refbody>
+      <prolog>
+        <xsl:apply-templates mode="topicMetadata"/>
+      </prolog>
+      <refbody>        
         <xsl:apply-templates mode="#current" select="node()"/>
       </refbody>
     </reference>
   </xsl:template>
   
-  <xsl:template match="compounddef[@kind = ('union')]" priority="10">
+  <xsl:template match="compounddef[@kind = ('union', 'struct')]" priority="10">
     <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
       <xsl:apply-templates mode="topicTitle" select="."/>
       <xsl:apply-templates mode="shortDesc" select="."/>
+      <prolog>
+        <xsl:apply-templates mode="topicMetadata"/>
+      </prolog>
       <refbody>
         <xsl:call-template name="makeIncludesSection"/>
         <xsl:apply-templates select="node() except (includes)"/>
@@ -122,6 +128,9 @@
     <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
       <xsl:apply-templates mode="topicTitle" select="."/>
       <xsl:apply-templates mode="shortDesc" select="."/>
+      <prolog>
+        <xsl:apply-templates mode="topicMetadata"/>
+      </prolog>
       <refbody>
         <xsl:call-template name="makeIncludesSection"/>
         <xsl:apply-templates select="programlisting" mode="makeExternalPageLink"/>
@@ -243,19 +252,23 @@
                  codeblock.
               -->
         <codeblock>
-          <xsl:apply-templates
+          <xsl:apply-templates mode="makeIncludesSection"
             select="includes"/>
         </codeblock>
       </section>
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="includes">
+  <xsl:template match="includes" mode="makeIncludesSection">
     <ph outputclass="{name(.)}">
       <xsl:text>#include </xsl:text>
       <xsl:apply-templates mode="makeIncludeFileref" select="."/>
     </ph>
     <xsl:text>&#x0a;</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="includes">
+    <!-- Suprress includes in default context -->
   </xsl:template>
   
   <xsl:template mode="makeIncludeFileref" match="includes[@local= ('yes')]" priority="10">   
@@ -437,11 +450,9 @@
   </xsl:template>
   
   <xsl:template match="compounddef/location">
-    <section outputclass="{name(.)}">
-      <xsl:apply-templates/>
-    </section>
+    <!-- Suppress in default mode -->
   </xsl:template>
-    
+  
   <xsl:template match="sectiondef[@kind = ('public-attrib')]" mode="makeSectionContents">
     <xsl:if test="memberdef">
       <sectiondiv outputclass="memberdecls">
@@ -738,6 +749,26 @@
   <xsl:template mode="shortDesc" match="para">
     <xsl:apply-templates/>
   </xsl:template>
+  
+  <!-- =========================
+       Mode topicMetadata
+       ========================= -->
+  
+  <xsl:template match="compounddef/location" mode="topicMetadata">
+    <!-- The location is in attributes in the source XML and wouldn't normally be displayed,
+         but it might be useful as metadata.
+      -->
+    <data name="{name(.)}" value="{@file}"/>
+  </xsl:template>
+  
+  <xsl:template mode="topicMetadata" match="*" priority="-1">
+    <!-- Most elements do not contribute to the prolog -->
+  </xsl:template>  
+  
+  <xsl:template mode="topicMetadata" match="text()">
+    <!-- Most elements do not contribute to the prolog -->
+  </xsl:template>
+
 
   <!-- =========================
        Mode fullTopics
