@@ -416,7 +416,7 @@
   </xsl:template>
   
   <xsl:template mode="summary" match="memberdef[@kind = ('enum')]">
-    <sectiondiv outputclass="declSummary {@kind}">
+    <section outputclass="declSummary {@kind}">
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
       <sectiondiv outputclass="enumvalues">
@@ -426,7 +426,7 @@
       <xsl:if test="detaileddescription">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
-    </sectiondiv>
+    </section>
   </xsl:template>
   
   <xsl:template match="enumvalue">
