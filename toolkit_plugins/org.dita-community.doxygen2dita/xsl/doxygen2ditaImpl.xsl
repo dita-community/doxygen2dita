@@ -37,13 +37,14 @@
   <xsl:output name="refTopic"
     doctype-public="-//OASIS//DTD DITA Reference//EN" 
     doctype-system="reference.dtd"
-    indent="yes"
+    indent="no"
     />
 
   <xsl:output name="topic"
     doctype-public="-//OASIS//DTD DITA Topic//EN" 
     doctype-system="topic.dtd"
-    indent="yes"
+    indent="no"
+    
     />
 
   <!-- ============================

@@ -71,9 +71,16 @@
     <xsl:sequence select="$result"/>
   </xsl:template>
   
+  <xsl:template mode="local:getKey" match="compounddef">
+    <xsl:variable name="result" as="xs:string"
+      select="translate(@id, '/', '_')"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
+  
   <xsl:template mode="local:getKey" match="programlisting">
     <xsl:variable name="result" as="xs:string"
-      select="concat(../@id, '_', 'programlisting')"
+      select="concat(local:getKey(..), '_', 'source')"
     />
     <xsl:sequence select="$result"/>
   </xsl:template>

@@ -21,7 +21,7 @@
        
        ========================================================== -->
   
-  <xsl:preserve-space elements="programlisting codeblock"/>
+  <xsl:preserve-space elements="codeblock"/>
   
   <xsl:template mode="generateTopics" match="doxygenindex">
     <xsl:apply-templates mode="#current"/>
@@ -135,7 +135,7 @@
       <!-- Detailed description of the file itself: -->
       <xsl:apply-templates select="detaileddescription" mode="makeTopic"/>
       <!-- Full topics for those things that have detailed descriptions: -->
-      <!--<xsl:apply-templates mode="fullTopics"/>-->
+      <xsl:apply-templates mode="fullTopics"/>-->
     </reference>
   </xsl:template>
   
@@ -740,5 +740,54 @@
   <xsl:template mode="shortDesc" match="para">
     <xsl:apply-templates/>
   </xsl:template>
+
+  <!-- =========================
+       Mode fullTopics
+       ========================= -->
   
+  <xsl:template mode="fullTopics" match="programlisting">
+    <xsl:variable name="topicURI" as="xs:string"
+      select="concat('topics/', local:getKey(.))"
+    />
+    <xsl:variable name="resultURI" as="xs:string"
+      select="relpath:newFile($outdir, concat($topicURI, '.dita'))"
+    />
+    <xsl:result-document href="{$resultURI}" format="topic">
+      <topic id="{local:getKey(.)}" outputclass="{name(.)}">
+        <title><xsl:value-of select="../compoundname"/></title>
+        <body>
+          <p outputclass="doclink">
+            <xref keyref="{local:getKey(..)}">Go to the documentation of this file.</xref>
+          </p>
+          <codeblock>
+            <xsl:apply-templates/>
+          </codeblock>
+        </body>
+      </topic>
+    </xsl:result-document>
+  </xsl:template>
+  
+  <xsl:template match="codeline">
+    <codeph outputclass="{name(.)}"><xsl:apply-templates select="@*" mode="data"/><xsl:apply-templates/></codeph>
+  </xsl:template>
+  
+  <xsl:template match="codeline/highlight[string(.) = '']" priority="10">    
+    <!-- Don't generate for empty elements as they can have no effect -->
+  </xsl:template>
+  
+  <xsl:template match="codeline/highlight">    
+    <codeph outputclass="{@class}"><xsl:apply-templates/></codeph>
+  </xsl:template>
+  
+  <xsl:template match="sp">
+    <ph outputclass="{name(.)}">&#x20;</ph>
+  </xsl:template>
+  
+  <xsl:template match="@lineno">
+    <data name="{name(.)}" value="{.}"/>
+  </xsl:template>
+  
+  <xsl:template mode="fullTopics" match="*" priority="-1">
+    <!-- Ignore things by default -->
+  </xsl:template>
 </xsl:stylesheet>
