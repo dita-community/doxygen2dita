@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:dita="http://dita-ot.sourceforge.net" name="doxygendita2xhtml">
   
-  <property name="doxygen.resources" value="${dita.plugin.com.oculus.doxygen.html.dir}${file.separator}resources"/>
+  <property name="doxygen.resources" value="${dita.plugin.org.dita-community.doxygen.html.dir}/resources"/>
 
   <property name="args.copycss" value="yes"/>
   <property name="args.css" value="doxygen.css"/>
-  <property name="args.cssroot" value="${doxygen.resources}${file.separator}css"/>
+  <property name="args.cssroot" value="${doxygen.resources}/css"/>
 
   <property name="clean.output" value="yes"/>
   <property name="clean.temp" value="yes"/>
 
+  <!-- Used during preprocessing to copy Doxygen-specific files -->
   <target name="doxygen-copy" >
     <echo message="--------- Doxugen build ----------------" />
     <echo message="doxygen.resources : '${doxygen.resources}" />
     <echo message="args.cssroot : '${args.cssroot}" />
     
-    <mkdir dir="${output.dir}${file.separator}resources"/>    
-    <copy todir="${output.dir}${file.separator}resources">
+    <mkdir dir="${output.dir}/resources"/>    
+    <copy todir="${output.dir}/resources">
       <fileset dir="${doxygen.resources}"/>
     </copy>
   </target>

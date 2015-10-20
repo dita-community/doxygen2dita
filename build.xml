@@ -1,0 +1,127 @@
+<project name="doxygen2dita-ot-plugins" basedir="." default="deploy-toolkit-plugins"
+	>
+	
+  <property file="version.properties"/>
+  <property file="build.properties"/>
+  <property file="${user.home}/.build.properties"/>
+  <property file="${user.home}/build.properties"/>
+	
+	<property name="license.dir" location="${basedir}"/>
+  <property name="toolkit.plugin.src" location="${basedir}"/>
+  <property name="temp" location="${basedir}/temp"/>
+  <property name="dita-ot-dir" location="c:\DITA-OT1.5"/>
+  <property name="plugin.src" location="${basedir}"/>
+	<property name="dist"  location="${basedir}/dist"/>
+	<property name="plugin.dist"  location="${basedir}/dist/plugins"/>
+	<property name="package.dist"  location="${basedir}/dist/package"/>
+	
+	
+
+	<path id="dita-classpath"
+		>
+		<fileset dir="${dita-ot-dir}">
+			<include name="lib"/>
+		</fileset>
+		<fileset dir="${dita-ot-dir}/lib">
+		  <include name="**/*.jar"/>
+		</fileset>
+    <fileset dir="${dita-ot-dir}/lib/org.dita.dost.platform">
+      <include name="*.properties"/>
+    </fileset>
+    <fileset dir="${dita-ot-dir}/lib/saxon">
+      <include name="**/*.jar"/>
+    </fileset>
+	</path>
+	
+  <path id="classpath.base">
+    <pathelement path="${classes.home}"/>
+    <fileset dir="${lib}">
+        <include name="*.jar"/>
+    </fileset>
+  </path>
+
+	<target name="init">
+		<buildnumber/>
+    <tstamp/>
+  </target>
+
+  <tstamp>
+		<format property="package.date" pattern="yyyy-MM-dd"/>
+	</tstamp>
+  
+  <tstamp>
+  	<format property="build-date-time"
+  	          pattern="yyyy-MM-dd HH:mm:SSS z"/>
+	</tstamp>
+
+
+  <target name="clean">
+  </target>
+	
+	<target name="add-version-info-to-files">
+	</target>
+	
+	<target name="dist-license-info" depends="dist-init">
+	  <!-- No need for project-level license info -->
+	</target>
+	
+	<target name="dist-toolkit-plugins" description="Packages the DITA Open Toolkit plugins for deployment to a working Toolkit instance"
+		 depends="
+		dist-init,
+		dist-license-info
+		"
+		>
+		<copy todir="${plugin.dist}">
+			<fileset dir="${basedir}/toolkit_plugins">
+				<include name="org.dita-community.*/**"/> 
+				<exclude name="*.zip"/> 
+			</fileset>
+		</copy>
+		
+		<!-- FIXME: Make this work  -->
+<!--    <antcall target="add-version-info-to-files"/>-->
+		
+  </target>
+	
+	<target name="deploy-toolkit-plugins" depends="dist-toolkit-plugins"
+	  description="Deploy plugins to local DITA Open Toolkit">
+	  <property name="plugin-deploy_target" location="${dita-ot-dir}/plugins"/>  
+	    <delete failonerror="true" includeemptydirs="true">
+			<fileset dir="${plugin-deploy_target}">
+				<include name="org.dita-community.doxygen*.*/**"/> 
+			</fileset>
+		</delete>
+		<mkdir dir="${plugin-deploy_target}"/>
+		<copy todir="${plugin-deploy_target}">
+			<fileset dir="${plugin.dist}">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+    <!-- Integrate the deployed plugins: -->
+    <ant antfile="${dita-ot-dir}/integrator.xml" target="integrate"/>
+
+	</target>
+	
+	<target name="dist-init" depends="init">
+		<delete failonerror="false" includeemptydirs="true">
+			<fileset dir="${dist}" includes="*/**"/>
+  	</delete>
+		<mkdir dir="${plugin.dist}"/>
+  </target>
+
+	
+	<target name="package-toolkit-plugins" depends="dist-init, dist-toolkit-plugins"
+		description="Create distributable Zip package of the Toolkit plugins, including the vocabulary modules."
+		>
+    <zip destfile="${package.dist}/doxygen2dita-toolkit-plugins-${version}.zip">
+      <fileset dir="${plugin.dist}">
+        <include name="*.txt"/>
+        <include name="*.md"/>
+      	<include name="*/**"/>
+      </fileset>
+    </zip>
+  </target>
+
+
+
+</project>
