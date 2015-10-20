@@ -225,7 +225,7 @@
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="compoundname"/></sectiondiv>
       <xsl:apply-templates select="briefdescription"/>
-      <xref keyref="{@id}">More...</xref>
+      <p outputclass="more-link"><xref keyref="{@id}">More...</xref></p>
     </section>
   </xsl:template>
   
