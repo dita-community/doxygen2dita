@@ -7,6 +7,9 @@
   
   <xsl:template mode="generateKeyDefinitions" match="doxygenindex">
     <!-- No keydefs generated at this time. -->
+    <!-- Keys are defined on navigation topicrefs and all topics
+         are included somewhere in the navigation structure. 
+      -->
   </xsl:template>
   
 </xsl:stylesheet>

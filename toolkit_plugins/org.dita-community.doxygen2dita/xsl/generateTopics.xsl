@@ -134,8 +134,6 @@
       <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('func')]"/>
       <!-- Detailed description of the file itself: -->
       <xsl:apply-templates select="detaileddescription" mode="makeTopic"/>
-      <!-- Full topics for those things that have detailed descriptions: -->
-      <xsl:apply-templates mode="fullTopics"/>-->
     </reference>
   </xsl:template>
   
@@ -743,28 +741,27 @@
 
   <!-- =========================
        Mode fullTopics
+
+NOTE: The result-document logic is
+       in the code that generates the corresponding
+       topicref to the topic. All topics must be 
+       referenced by topicref from the map, so it
+       makes sense to generate the result document
+       at the time the topicref is constructed.
        ========================= -->
   
   <xsl:template mode="fullTopics" match="programlisting">
-    <xsl:variable name="topicURI" as="xs:string"
-      select="concat('topics/', local:getKey(.))"
-    />
-    <xsl:variable name="resultURI" as="xs:string"
-      select="relpath:newFile($outdir, concat($topicURI, '.dita'))"
-    />
-    <xsl:result-document href="{$resultURI}" format="topic">
-      <topic id="{local:getKey(.)}" outputclass="{name(.)}">
-        <title><xsl:value-of select="../compoundname"/></title>
-        <body>
-          <p outputclass="doclink">
-            <xref keyref="{local:getKey(..)}">Go to the documentation of this file.</xref>
-          </p>
-          <codeblock>
-            <xsl:apply-templates/>
-          </codeblock>
-        </body>
-      </topic>
-    </xsl:result-document>
+    <topic id="{local:getKey(.)}" outputclass="{name(.)}">
+      <title><xsl:value-of select="../compoundname"/></title>
+      <body>
+        <p outputclass="doclink">
+          <xref keyref="{local:getKey(..)}">Go to the documentation of this file.</xref>
+        </p>
+        <codeblock>
+          <xsl:apply-templates/>
+        </codeblock>
+      </body>
+    </topic>
   </xsl:template>
   
   <xsl:template match="codeline">

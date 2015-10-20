@@ -58,6 +58,10 @@
     </xsl:for-each>
   </xsl:template>
 
+  <xsl:template mode="generateAncilaryTopicrefs" match="doxygenindex | doxygen">
+    <xsl:apply-templates mode="#current"></xsl:apply-templates>
+  </xsl:template>
+  
   <xsl:template mode="generateTopicrefs" match="compound">
     <xsl:variable name="topicURI" as="xs:string"
       select="local:getTopicUri(.)"
@@ -91,6 +95,46 @@
         </topicref>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template mode="generateAncilaryTopicrefs" match="compound">
+    <xsl:variable name="topicURI" as="xs:string"
+      select="local:getTopicUri(.)"
+    />
+    <xsl:variable name="resultURI" as="xs:string"
+      select="relpath:newFile($outdir, $topicURI)"
+    />
+    <xsl:variable name="keyName" as="xs:string"
+      select="local:getKey(.)"
+    />
+    <xsl:variable name="sourceURI" as="xs:string"
+         select="concat(@refid, '.xml')"
+    />
+    <xsl:variable name="sourceDoc" as="document-node()?"
+      select="document($sourceURI, .)"
+    />
+    <xsl:apply-templates mode="#current" select="$sourceDoc/*"/>
+  </xsl:template>
+
+  <xsl:template mode="generateAncilaryTopicrefs" match="compounddef">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+
+  <xsl:template mode="generateAncilaryTopicrefs" match="programlisting">
+    <xsl:variable name="topicURI" as="xs:string"
+      select="concat('topics/', local:getKey(.), '.dita')"
+    />
+    <xsl:variable name="resultURI" as="xs:string"
+      select="relpath:newFile($outdir, $topicURI)"
+    />
+    <xsl:result-document href="{$resultURI}" format="topic">
+      <xsl:apply-templates select="." mode="fullTopics"/>
+    </xsl:result-document>
+    <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"/>
+  </xsl:template>
+  
+  <xsl:template mode="generateAncilaryTopicrefs" match="*" priority="-1">
+    <!-- Suppress by default as most elements do not generate ancilary topics -->
   </xsl:template>
 
 </xsl:stylesheet>

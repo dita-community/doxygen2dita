@@ -100,11 +100,14 @@
   <xsl:template match="doxygenindex">
     <map>
       <title><xsl:value-of select="$mapTitle"/></title>
-      <topicgroup><xsl:comment> Key definitions </xsl:comment>
+      <topicgroup outputclass="keydefs"><xsl:comment> Key definitions </xsl:comment>
           <xsl:apply-templates mode="generateKeyDefinitions" select="."/>
       </topicgroup>
-      <topicgroup><xsl:comment> Publication body </xsl:comment>
+      <topicgroup outputclass="pubbody"><xsl:comment> Publication body </xsl:comment>
         <xsl:apply-templates mode="generateTopicrefs" select="."/>
+      </topicgroup>
+      <topicgroup outputclass="ancilary-topics" toc="no">
+        <xsl:apply-templates mode="generateAncilaryTopicrefs" select="."/>
       </topicgroup>
     </map>
     <!-- Now generate the result topics -->
