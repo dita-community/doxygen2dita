@@ -288,10 +288,19 @@
   </xsl:template>
   
   <xsl:template mode="makeIncludeFileLink" match="includes[@refid]" priority="10">
+    <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:variable name="key" as="xs:string"
       select="local:getKey(.)"
     />
-    <xref keyref="{$key}"><xsl:apply-templates/></xref>
+    <xsl:choose>
+      <xsl:when test="$wrapXref">
+        <ph><xref keyref="{$key}"><xsl:apply-templates/></xref></ph>
+      </xsl:when>
+      <xsl:otherwise>
+        <xref keyref="{$key}"><xsl:apply-templates/></xref>    
+      </xsl:otherwise>
+    </xsl:choose>
+    
   </xsl:template>
   
   <xsl:template mode="summary" match="sectiondef[@kind = ('define')]">
@@ -528,12 +537,20 @@
   </xsl:template>  
   
   <xsl:template match="ref">
+    <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
     <!-- Assume a ref is a key reference -->
     <!-- FIXME: Some references are to things in the same result file.
                 Need to distinguish these and generate same-file URL
                 references.
       -->
-    <xref keyref="{local:getKey(.)}" outputclass="{@kindref}"><xsl:apply-templates/></xref>
+    <xsl:choose>
+      <xsl:when test="$wrapXref">
+        <ph><xref keyref="{local:getKey(.)}" outputclass="{@kindref}"><xsl:apply-templates/></xref></ph>
+      </xsl:when>
+      <xsl:otherwise>
+        <xref keyref="{local:getKey(.)}" outputclass="{@kindref}"><xsl:apply-templates/></xref>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="collaborationgraph | inheritancegraph | incdepgraph">
@@ -560,7 +577,15 @@
   </xsl:template>
   
   <xsl:template match="node/link" priority="10">
-    <xref keyref="{local:getKey(.)}"><xsl:apply-templates/></xref>
+    <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:choose>
+      <xsl:when test="$wrapXref">
+        <ph>    <xref keyref="{local:getKey(.)}"><xsl:apply-templates/></xref></ph>
+      </xsl:when>
+      <xsl:otherwise>
+        <xref keyref="{local:getKey(.)}"><xsl:apply-templates/></xref>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="childnode">
@@ -617,9 +642,20 @@
     <!-- 
       <ulink url="http://www.oculusvr.com/licenses/LICENSE-3.2">http://www.oculusvr.com/licenses/LICENSE-3.2</ulink>
       -->
-    <xref href="{@url}" 
+    
+    <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:choose>
+      <xsl:when test="$wrapXref">
+        <ph><xref href="{@url}" 
+      scope="external"
+      format="html"><xsl:apply-templates/></xref></ph>
+      </xsl:when>
+      <xsl:otherwise>
+        <xref href="{@url}" 
       scope="external"
       format="html"><xsl:apply-templates/></xref>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="linebreak"/><!-- Suppress -->
@@ -743,7 +779,9 @@
   </xsl:template>
   
   <xsl:template mode="shortDesc" match="briefdescription">
-    <shortdesc><xsl:apply-templates mode="#current"/></shortdesc>
+    <shortdesc><xsl:apply-templates mode="#current">
+      <xsl:with-param name="wrapXref" as="xs:boolean" tunnel="yes" select="true()"/>
+    </xsl:apply-templates></shortdesc>
   </xsl:template>
   
   <xsl:template mode="shortDesc" match="para">
