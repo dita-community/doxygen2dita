@@ -71,6 +71,13 @@
     <xsl:sequence select="$result"/>
   </xsl:template>
   
+  <xsl:template mode="local:getKey" match="programlisting">
+    <xsl:variable name="result" as="xs:string"
+      select="concat(../@id, '_', 'programlisting')"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
+  
   <xsl:template mode="local:getKey" match="ref | includes">
     <xsl:variable name="result" as="xs:string"
       select="translate(@refid, '/', '_')"

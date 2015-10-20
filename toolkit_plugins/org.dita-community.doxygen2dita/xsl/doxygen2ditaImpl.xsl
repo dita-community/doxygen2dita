@@ -15,7 +15,7 @@
        to access its dependencies and to make it easy run. It has no dependency
        on the normal DITA Open Toolkit preprocessing.
        
-       Copyright (c) 2015 Oculus
+       Copyright (c) 2015 DITA Community
        
        Authored by W. Eliot Kimber, ekimber@contrext.com
        

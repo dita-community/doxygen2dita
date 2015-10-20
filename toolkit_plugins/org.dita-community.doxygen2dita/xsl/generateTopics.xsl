@@ -124,6 +124,7 @@
       <xsl:apply-templates mode="shortDesc" select="."/>
       <refbody>
         <xsl:call-template name="makeIncludesSection"/>
+        <xsl:apply-templates select="programlisting" mode="makeExternalPageLink"/>
       </refbody>
       <!-- Summary topics: -->
       <xsl:call-template name="makeDataStructuresTopic"/>
@@ -644,6 +645,15 @@
   <xsl:template match="programlisting">
     <section spectitle="Program Listing">
       <codeblock><xsl:apply-templates/></codeblock>
+    </section>
+  </xsl:template>
+  
+  <xsl:template match="programlisting" mode="makeExternalPageLink">
+    <xsl:variable name="targetKey" as="xs:string" 
+      select="local:getKey(.)"
+    />
+    <section outputclass="programlisting-link">
+      <p><xref keyref="{$targetKey}">Go to the source code of this file.</xref></p>
     </section>
   </xsl:template>
   

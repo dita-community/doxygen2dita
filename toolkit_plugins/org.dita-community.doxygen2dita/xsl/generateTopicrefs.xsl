@@ -68,11 +68,29 @@
     <xsl:variable name="keyName" as="xs:string"
       select="local:getKey(.)"
     />
-    <topicref keys="{$keyName}"
-        href="{$topicURI}"
+    <xsl:variable name="sourceURI" as="xs:string"
+         select="concat(@refid, '.xml')"
+    />
+    <xsl:variable name="sourceDoc" as="document-node()?"
+      select="document($sourceURI, .)"
+    />
+    <xsl:variable name="sourceDocBodyText"
+
     >
-      <xsl:apply-templates mode="#current"/>
-    </topicref>
+      <xsl:apply-templates mode="getBodyText" select="$sourceDoc/*"/>
+    </xsl:variable>
+    <xsl:choose>
+      <xsl:when test="$sourceDocBodyText = ''">
+        <xsl:message> + [INFO] Source document <xsl:value-of select="$sourceURI"/> has no content, skipping.</xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+        <topicref keys="{$keyName}"
+            href="{$topicURI}"
+        >
+          <xsl:apply-templates mode="#current"/>
+        </topicref>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
 </xsl:stylesheet>
