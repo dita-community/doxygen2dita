@@ -875,67 +875,77 @@ NOTE: The result-document logic is
     </reference>
   </xsl:template>
   
-  <xsl:template mode="fullTopics" match="memberdef[@kind = ('function')]">
+  <xsl:template mode="fullTopics" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef')]">
     <reference id="{local:getId(.)}" outputclass="{@kind}">
-      <xsl:apply-templates select="." mode="makeFunctionDocTitle"/>
+      <xsl:apply-templates select="." mode="makeMemberdefDocTitle"/>
       <refbody>
         <section>
-          <xsl:apply-templates select="briefdescription, detaileddescription" mode="makeFunctionDocTopic"/>
+          <xsl:apply-templates select="briefdescription, detaileddescription" mode="makeMemberdefDocTopic"/>
         </section>
-        <xsl:apply-templates select="." mode="makeFunctionParametersSection"/>
-        <xsl:apply-templates select="." mode="makeFunctionReturnsSection"/>
-        <xsl:apply-templates select="." mode="makeFunctionSeeAlsoSection"/>
+        <xsl:apply-templates select="." mode="makeMemberdefParametersSection"/>
+        <xsl:apply-templates select="." mode="makeMemberdefReturnsSection"/>
+        <xsl:apply-templates select="." mode="makeMemberdefSeeAlsoSection"/>
       </refbody>
     </reference>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionDocTopic" match="briefdescription | detaileddescription">
+  <xsl:template mode="makeMemberdefDocTopic" match="briefdescription | detaileddescription">
     <xsl:apply-templates select="* except (para[parameterlist | simplesect])"/>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionDocTitle" match="memberdef">
-     <title><xsl:apply-templates select="type, name" mode="#current"/> ( <xsl:apply-templates select="param" mode="#current"/> )</title>
+  <xsl:template mode="makeMemberdefDocTitle" match="memberdef">
+     <title><xsl:apply-templates select="type, name" mode="#current"/> 
+       <xsl:if test="param">
+         <xsl:text> ( </xsl:text>
+           <xsl:apply-templates select="param" mode="#current"/>
+         <xsl:text> ) </xsl:text>  
+       </xsl:if>
+       <xsl:apply-templates select="initializer" mode="#current"/>
+     </title>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionDocTitle" match="type | name | declname">
+  <xsl:template mode="makeMemberdefDocTitle" match="type | name | declname | defname | initializer">
     <ph outputclass="{name(.)}"><xsl:apply-templates/></ph>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionDocTitle" match="param">
-    <ph outputclass="{name(.)}"><xsl:apply-templates select="type, declname" mode="#current"/></ph>
+  <xsl:template mode="makeMemberdefDocTitle" match="param">
+    <xsl:if test="count(preceding-sibling::param) gt 0">
+      <xsl:text>, </xsl:text>
+    </xsl:if>
+    <ph outputclass="{name(.)}"><xsl:apply-templates select="type, declname, defname" mode="#current"/></ph>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionParametersSection" match="memberdef">
+  <xsl:template mode="makeMemberdefParametersSection" match="memberdef">
     <xsl:apply-templates select="detaileddescription/para/parameterlist" mode="#current"/>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionParametersSection" match="parameterlist">
+  <xsl:template mode="makeMemberdefParametersSection" match="parameterlist">
     <section spectitle="Parameters">
       <xsl:apply-templates select="."/>
     </section>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionReturnsSection" match="memberdef">
+  <xsl:template mode="makeMemberdefReturnsSection" match="memberdef">
     <xsl:apply-templates mode="#current" select="detaileddescription/para/simplesect[@kind = ('return')]"/>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionReturnsSection" match="simplesect[@kind = ('return')]">
+  <xsl:template mode="makeMemberdefReturnsSection" match="simplesect[@kind = ('return')]">
     <section spectitle="Return">
       <xsl:apply-templates/>
     </section>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionSeeAlsoSection" match="memberdef">
+  <xsl:template mode="makeMemberdefSeeAlsoSection" match="memberdef">
     <xsl:apply-templates mode="#current" select="detaileddescription/para/simplesect[@kind=('see')]"/>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionSeeAlsoSection" match="simplesect[@kind = ('see')]">
+  <xsl:template mode="makeMemberdefSeeAlsoSection" match="simplesect[@kind = ('see')]">
     <section spectitle="See also">
       <xsl:apply-templates mode="#current"/>
     </section>
   </xsl:template>
   
-  <xsl:template mode="makeFunctionSeeAlsoSection" match="para">
+  <xsl:template mode="makeMemberdefSeeAlsoSection" match="para">
     <p><xsl:apply-templates/></p>
   </xsl:template>
   
