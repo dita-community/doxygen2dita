@@ -143,10 +143,11 @@
       <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('func')]"/>
       <!-- Detailed description of the file itself: -->
       <xsl:apply-templates select="detaileddescription" mode="makeTopic"/>
+      <xsl:apply-templates select="sectiondef" mode="detailedDescriptionSubtopics"/>
     </reference>
   </xsl:template>
   
-  <xsl:template mode="makeTopic" match="detaileddescription">
+  <xsl:template mode="makeTopic" match="compounddef[@kind = ('file')]/detaileddescription">
     <reference id="{local:getId(.)}" outputclass="{name(.)}">
       <title>Detailed Description</title>
       <refbody>
@@ -658,6 +659,16 @@
     </xsl:choose>
   </xsl:template>
   
+  <xsl:template match="xrefsect | xrefdescription">
+    <sectiondiv outputclass="{name(.)}">
+      <xsl:apply-templates/>
+    </sectiondiv>
+  </xsl:template>
+  
+  <xsl:template match="xreftitle">
+    <p outputclass="{name(.)}"><xsl:apply-templates/></p>
+  </xsl:template>
+  
   <xsl:template match="linebreak"/><!-- Suppress -->
   
   <xsl:template match="simplesect[@kind = 'see']">
@@ -679,12 +690,22 @@
     </ul>
   </xsl:template>
   
+  <xsl:template match="orderedlist">
+    <ol>
+      <xsl:apply-templates/>
+    </ol>
+  </xsl:template>
+  
   <xsl:template match="listitem">
     <li><xsl:apply-templates/></li>
   </xsl:template>
   
   <xsl:template match="emphasis">
     <i><xsl:apply-templates/></i>
+  </xsl:template>  
+  
+  <xsl:template match="bold">
+    <b><xsl:apply-templates/></b>
   </xsl:template>  
   
   <xsl:template match="programlisting">
@@ -741,6 +762,25 @@
   </xsl:template>
 
   <!-- =========================
+       Mode detailedDescriptionSubtopics
+       
+       Generates subtopics for memberdefs
+       with detailed descriptions, organized
+       into groups by kind.
+       ========================= -->
+
+  <xsl:template mode="detailedDescriptionSubtopics" match="sectiondef">
+    <reference id="{@kind}">
+      <title><xsl:value-of select="local:getLabelForKind(@kind, false())"/> Documentation</title>
+      <xsl:apply-templates mode="fullTopics" select="memberdef[normalize-space(detaileddescription) != '']"/>
+    </reference>
+  </xsl:template>
+
+  <xsl:template mode="detailedDescriptionSubtopics" match="sectiondef[@kind = ('user-defined')]" priority="10">
+    <!-- Skip, already contribute to the main file topic body -->
+  </xsl:template>
+
+  <!-- =========================
        Mode make data elements
        from attributes
        ========================= -->
@@ -768,6 +808,10 @@
       <xsl:value-of select="$titleString"/> 
       <xsl:text> </xsl:text>
       <xsl:value-of select="local:getLabelForKind(@kind, false())"/></title>
+  </xsl:template>
+  
+  <xsl:template mode="topicTitle" match="*" priority="-1">
+    <xsl:apply-templates/>
   </xsl:template>
   
   <!-- =========================
@@ -818,6 +862,82 @@ NOTE: The result-document logic is
        makes sense to generate the result document
        at the time the topicref is constructed.
        ========================= -->
+  
+  <!-- Fallback for memberdefs with unhandled @kind values -->
+  <xsl:template mode="fullTopics" match="memberdef" priority="-0.5">
+    <reference id="{local:getId(.)}" outputclass="{@kind}">
+      <title><xsl:apply-templates select="name" mode="topicTitle"/></title> 
+      <refbody>
+        <section>
+          <xsl:apply-templates/>
+        </section>
+      </refbody>
+    </reference>
+  </xsl:template>
+  
+  <xsl:template mode="fullTopics" match="memberdef[@kind = ('function')]">
+    <reference id="{local:getId(.)}" outputclass="{@kind}">
+      <xsl:apply-templates select="." mode="makeFunctionDocTitle"/>
+      <refbody>
+        <section>
+          <xsl:apply-templates select="briefdescription, detaileddescription" mode="makeFunctionDocTopic"/>
+        </section>
+        <xsl:apply-templates select="." mode="makeFunctionParametersSection"/>
+        <xsl:apply-templates select="." mode="makeFunctionReturnsSection"/>
+        <xsl:apply-templates select="." mode="makeFunctionSeeAlsoSection"/>
+      </refbody>
+    </reference>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionDocTopic" match="briefdescription | detaileddescription">
+    <xsl:apply-templates select="* except (para[parameterlist | simplesect])"/>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionDocTitle" match="memberdef">
+     <title><xsl:apply-templates select="type, name" mode="#current"/> ( <xsl:apply-templates select="param" mode="#current"/> )</title>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionDocTitle" match="type | name | declname">
+    <ph outputclass="{name(.)}"><xsl:apply-templates/></ph>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionDocTitle" match="param">
+    <ph outputclass="{name(.)}"><xsl:apply-templates select="type, declname" mode="#current"/></ph>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionParametersSection" match="memberdef">
+    <xsl:apply-templates select="detaileddescription/para/parameterlist" mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionParametersSection" match="parameterlist">
+    <section spectitle="Parameters">
+      <xsl:apply-templates select="."/>
+    </section>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionReturnsSection" match="memberdef">
+    <xsl:apply-templates mode="#current" select="detaileddescription/para/simplesect[@kind = ('return')]"/>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionReturnsSection" match="simplesect[@kind = ('return')]">
+    <section spectitle="Return">
+      <xsl:apply-templates/>
+    </section>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionSeeAlsoSection" match="memberdef">
+    <xsl:apply-templates mode="#current" select="detaileddescription/para/simplesect[@kind=('see')]"/>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionSeeAlsoSection" match="simplesect[@kind = ('see')]">
+    <section spectitle="See also">
+      <xsl:apply-templates mode="#current"/>
+    </section>
+  </xsl:template>
+  
+  <xsl:template mode="makeFunctionSeeAlsoSection" match="para">
+    <p><xsl:apply-templates/></p>
+  </xsl:template>
   
   <xsl:template mode="fullTopics" match="programlisting">
     <topic id="{local:getKey(.)}" outputclass="{name(.)}">

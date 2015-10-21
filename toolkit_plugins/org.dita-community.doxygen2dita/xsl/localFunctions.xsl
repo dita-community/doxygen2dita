@@ -120,7 +120,12 @@
                'protected-func',
                'variable',
                'function',
-               'union'
+               'union',
+               'enum',
+               'func',
+               'typedef',
+               'define',
+               'xxx'
                )"
     />
     <xsl:variable name="labelsPlural" as="xs:string+"
@@ -135,7 +140,12 @@
                'Protected Functions',
                'Properties',
                'Functions',
-               'Unions'
+               'Unions',
+               'Enumeration Types',
+               'Functions',
+               'Typedefs',
+               'Macro Definitions',
+               'XXXs'
                )"
     />
     <xsl:variable name="labelsSingular" as="xs:string+"
@@ -150,7 +160,12 @@
                'Protected Function',
                'Properties',
                'Function',
-               'Union'
+               'Union',
+               'Enumeration Type',
+               'Function',
+               'Typedef',
+               'Macro Definition',
+               'XXX'
                )"
     />
     <xsl:variable name="p" as="xs:integer*"
