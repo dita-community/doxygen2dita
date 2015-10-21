@@ -143,7 +143,10 @@
       <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('func')]"/>
       <!-- Detailed description of the file itself: -->
       <xsl:apply-templates select="detaileddescription" mode="makeTopic"/>
-      <xsl:apply-templates select="sectiondef" mode="detailedDescriptionSubtopics"/>
+      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('define')]"/>
+      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('typedef')]"/>
+      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = 'enum']"/>
+      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('func')]"/>
     </reference>
   </xsl:template>
   
@@ -160,6 +163,10 @@
   </xsl:template>
   
   <xsl:template match="para[simplesect]" priority="10">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] para[simplesect]</xsl:message>
+    </xsl:if>
     <!-- Don't generate paragraphs for paras that contain simplesect -->
     <xsl:apply-templates/>
   </xsl:template>
@@ -629,11 +636,19 @@
     <ph outputclass="{name(.)}"><xsl:apply-templates/></ph>
   </xsl:template>
   
-  <xsl:template match="para">
+  <xsl:template match="para" mode="#default makeMemberdefEnumeratorSection">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] para base template</xsl:message>
+    </xsl:if>
     <p><xsl:apply-templates/></p>
   </xsl:template>
   
-  <xsl:template match="para[linebreak]" priority="10">
+  <xsl:template match="para[linebreak]" priority="10" mode="#default makeMemberdefEnumeratorSection">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] para[linebreak]</xsl:message>
+    </xsl:if>
     <xsl:for-each-group select="node()" group-ending-with="linebreak">
       <p><xsl:apply-templates select="current-group()"/></p>
     </xsl:for-each-group>
@@ -681,6 +696,10 @@
   </xsl:template>
   
   <xsl:template match="simplesect[@kind = 'see']/para">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] simplesect[@kind = 'see']/para</xsl:message>
+    </xsl:if>
     <xsl:apply-templates/>
   </xsl:template>
   
@@ -829,6 +848,10 @@
   </xsl:template>
   
   <xsl:template mode="shortDesc" match="para">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] shortDesc: para</xsl:message>
+    </xsl:if>
     <xsl:apply-templates/>
   </xsl:template>
   
@@ -885,6 +908,7 @@ NOTE: The result-document logic is
         <xsl:apply-templates select="." mode="makeMemberdefParametersSection"/>
         <xsl:apply-templates select="." mode="makeMemberdefReturnsSection"/>
         <xsl:apply-templates select="." mode="makeMemberdefSeeAlsoSection"/>
+        <xsl:apply-templates select="." mode="makeMemberdefEnumeratorSection"/>
       </refbody>
     </reference>
   </xsl:template>
@@ -894,17 +918,29 @@ NOTE: The result-document logic is
   </xsl:template>
   
   <xsl:template mode="makeMemberdefDocTitle" match="memberdef">
-     <title><xsl:apply-templates select="type, name" mode="#current"/> 
-       <xsl:if test="param">
-         <xsl:text> ( </xsl:text>
-           <xsl:apply-templates select="param" mode="#current"/>
-         <xsl:text> ) </xsl:text>  
-       </xsl:if>
-       <xsl:apply-templates select="initializer" mode="#current"/>
-     </title>
+   <title><xsl:apply-templates select="type, name" mode="#current"/> 
+     <xsl:if test="param">
+       <xsl:text> ( </xsl:text>
+         <xsl:apply-templates select="param" mode="#current"/>
+       <xsl:text> ) </xsl:text>  
+     </xsl:if>
+     <xsl:apply-templates select="initializer" mode="#current"/>
+   </title>
   </xsl:template>
   
-  <xsl:template mode="makeMemberdefDocTitle" match="type | name | declname | defname | initializer">
+  <xsl:template mode="makeMemberdefDocTitle" match="memberdef[@kind = 'define']" priority="10">
+   <title><xsl:text>#define </xsl:text><xsl:apply-templates select="type, name, argsstring" mode="#current"/></title>
+  </xsl:template>
+  
+  <xsl:template mode="makeMemberdefDocTitle" match="memberdef[@kind = 'typedef']" priority="10">
+   <title><xsl:text>typedef </xsl:text><xsl:apply-templates select="type, name, argsstring" mode="#current"/></title>
+  </xsl:template>
+  
+  <xsl:template mode="makeMemberdefDocTitle" match="memberdef[@kind = 'enum']" priority="10">
+   <title><xsl:text>enum </xsl:text><xsl:apply-templates select="name" mode="#current"/></title>
+  </xsl:template>
+  
+  <xsl:template mode="makeMemberdefDocTitle" match="type | name | declname | defname | initializer | argsstring">
     <ph outputclass="{name(.)}"><xsl:apply-templates/></ph>
   </xsl:template>
   
@@ -946,7 +982,73 @@ NOTE: The result-document logic is
   </xsl:template>
   
   <xsl:template mode="makeMemberdefSeeAlsoSection" match="para">
-    <p><xsl:apply-templates/></p>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] makeMemberdefSeeAlsoSection: applying next match</xsl:message>
+    </xsl:if>
+    <xsl:next-match>
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:next-match>
+  </xsl:template>
+
+  <xsl:template mode="makeMemberdefEnumeratorSection" match="memberdef">
+    <!-- No enumvalue, nothing to do -->
+  </xsl:template>
+
+  <xsl:template mode="makeMemberdefEnumeratorSection" match="memberdef[enumvalue]" priority="10">
+    <section outputclass="enumerators">
+      <table
+        frame="all"
+        rowsep="1"
+        colsep="1">
+        <tgroup
+          cols="2">
+          <colspec
+            colname="c1"
+            colnum="1"
+            colwidth="1.0*"/>
+          <colspec
+            colname="c2"
+            colnum="2"
+            colwidth="1.0*"/>
+          <thead>
+            <row>
+              <entry
+                namest="c1"
+                nameend="c2">Enumerator</entry>
+            </row>
+          </thead>
+          <tbody>
+            <xsl:apply-templates mode="makeMemberdefEnumeratorSection" select="enumvalue"/>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  </xsl:template>
+
+  <xsl:template mode="makeMemberdefEnumeratorSection" match="enumvalue">
+    <row>
+      <entry>
+        <xsl:apply-templates select="name" mode="makeMemberdefDocTitle"/>
+      </entry>
+      <entry>
+        <xsl:apply-templates select="briefdescription, detaileddescription"
+          mode="#current"
+        >
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+        </xsl:apply-templates>
+      </entry>
+    </row>
+  </xsl:template>
+  
+  <xsl:template mode="makeMemberdefEnumeratorSection" match="briefdescription | detaileddescription">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] makeMemberdefEnumeratorSection: Got <xsl:value-of select="concat(name(..), '/', name(.))"/>, applying templates in same mode.</xsl:message>
+    </xsl:if>
+    <xsl:apply-templates mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template mode="fullTopics" match="programlisting">
