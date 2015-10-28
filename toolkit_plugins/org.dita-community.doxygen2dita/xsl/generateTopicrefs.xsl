@@ -133,6 +133,28 @@
     <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"/>
   </xsl:template>
   
+  <xsl:template mode="generateAncilaryTopicrefs" match="sectiondef">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="generateAncilaryTopicrefs" match="text()"/>
+  
+  <xsl:template mode="generateAncilaryTopicrefs" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef')]">
+    <!-- memberdefs are chunked within their containing compounddef's 
+         topic.
+      -->
+    <xsl:variable name="topicID" as="xs:string" select="local:getId(.)"/>
+    <xsl:message> + [DEBUG] memberdef, @kind="<xsl:value-of select="@kind"/>", topicID="<xsl:value-of select="$topicID"/>, @id="<xsl:value-of select="@id"/>"</xsl:message>
+    <xsl:variable name="topicURI" as="xs:string"
+      select="concat('topics/', local:getKey(ancestor::compounddef), '.dita',
+                     '#',$topicID)"
+    />
+    <xsl:variable name="resultURI" as="xs:string"
+      select="relpath:newFile($outdir, $topicURI)"
+    />
+    <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"/>
+  </xsl:template>
+  
   <xsl:template mode="generateAncilaryTopicrefs" match="*" priority="-1">
     <!-- Suppress by default as most elements do not generate ancilary topics -->
   </xsl:template>

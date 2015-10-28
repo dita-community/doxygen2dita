@@ -78,6 +78,13 @@
     <xsl:sequence select="$result"/>
   </xsl:template>
   
+  <xsl:template mode="local:getKey" match="memberdef">
+    <xsl:variable name="result" as="xs:string"
+      select="local:getId(.)"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
+  
   <xsl:template mode="local:getKey" match="programlisting">
     <xsl:variable name="result" as="xs:string"
       select="concat(local:getKey(..), '_', 'source')"

@@ -110,7 +110,7 @@
     </reference>
   </xsl:template>
   
-  <xsl:template match="compounddef[@kind = ('union', 'struct')]" priority="10">
+  <xsl:template match="compounddef[@kind = ('union')]" priority="10">
     <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
       <xsl:apply-templates mode="topicTitle" select="."/>
       <xsl:apply-templates mode="shortDesc" select="."/>
@@ -121,6 +121,22 @@
         <xsl:call-template name="makeIncludesSection"/>
         <xsl:apply-templates select="node() except (includes)"/>
       </refbody>
+    </reference>
+  </xsl:template>
+  
+  <xsl:template match="compounddef[@kind = ('struct')]" priority="10">
+    <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
+      <xsl:apply-templates mode="topicTitle" select="."/>
+      <xsl:apply-templates mode="shortDesc" select="."/>
+      <prolog>
+        <xsl:apply-templates mode="topicMetadata"/>
+      </prolog>
+      <refbody>
+        <xsl:call-template name="makeIncludesSection"/>
+        <xsl:apply-templates select="node() except (includes)"/>
+     </refbody>
+      <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('public-func')]"/>
+      <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('public-attrib')]"/>
     </reference>
   </xsl:template>
   
@@ -311,16 +327,43 @@
     
   </xsl:template>
   
-  <xsl:template mode="summary" match="sectiondef[@kind = ('define')]">
+  <xsl:template mode="summary" match="sectiondef[@kind = ('public-attrib')]">
     <reference id="{local:getId(.)}">
-      <title>Macros</title>
+      <title>Data Fields</title>
       <refbody>
-        <xsl:apply-templates select="memberdef[@kind = ('define')]" mode="summary"/>
+        <xsl:apply-templates select="memberdef[@kind = ('variable')]" mode="summary"/>
+      </refbody>
+    </reference>
+  </xsl:template>
+    
+  <xsl:template mode="summary" match="sectiondef[@kind = ('public-func')]">
+    <reference id="{local:getId(.)}">
+      <title>Data Fields</title>
+      <refbody>
+        <xsl:apply-templates select="memberdef[@kind = ('function')]" mode="summary"/>
       </refbody>
     </reference>
   </xsl:template>
     
   <xsl:template mode="summary" match="memberdef[@kind = ('define')]">
+    <section outputclass="declSummary {@kind}">
+      <sectiondiv outputclass="kind">#<xsl:value-of select="@kind"/></sectiondiv>
+      <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
+      <xsl:if test="param">
+        <sectiondiv outputclass="params">
+          <xsl:apply-templates select="param"/>
+        </sectiondiv>
+      </xsl:if>
+      <xsl:if test="initializer">
+        <sectiondiv outputclass="initializer">
+          <xsl:apply-templates select="initializer"/>
+        </sectiondiv>
+      </xsl:if>
+      <xsl:apply-templates select="briefdescription"/>
+    </section>
+  </xsl:template>
+    
+  <xsl:template mode="summary" match="memberdef[@kind = ('variable')]">
     <section outputclass="declSummary {@kind}">
       <sectiondiv outputclass="kind">#<xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
