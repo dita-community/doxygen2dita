@@ -110,6 +110,45 @@
     </reference>
   </xsl:template>
   
+  <xsl:template match="compounddef[@kind = ('dir')]" priority="10">
+    <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
+      <title>File List</title>
+      <xsl:apply-templates mode="shortDesc" select="."/>
+      <prolog>
+        <xsl:apply-templates mode="topicMetadata"/>
+      </prolog>
+      <refbody>
+        <section outputclass="dir">
+          <dl outputclass="directory">
+            <dlentry outputclass="dir">
+              <dt><xsl:value-of select="compoundname"/></dt>
+              <dd>
+                <dl outputclass="filelist">
+                  <xsl:apply-templates select="innerfile"></xsl:apply-templates>
+                </dl>
+              </dd>
+            </dlentry>
+          </dl>
+        </section>
+      </refbody>
+    </reference>
+  </xsl:template>
+  
+  <xsl:template match="innerfile">
+    <xsl:variable name="sourceURI" as="xs:string"
+         select="concat(@refid, '.xml')"
+    />
+    <xsl:variable name="sourceDoc" as="document-node()?"
+      select="document($sourceURI, .)"
+    />
+    <dlentry outputclass="file">
+      <dt outputclass="filename"><xref keyref="{local:getKey($sourceDoc/*/compounddef)}"><xsl:value-of select="normalize-space(.)"/></xref></dt>
+      <dd outputclass="shortdesc">
+        <xsl:apply-templates select="$sourceDoc/*/compounddef/briefdescription/node()"/>
+      </dd>
+    </dlentry>
+  </xsl:template>
+  
   <xsl:template match="compounddef[@kind = ('union')]" priority="10">
     <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
       <xsl:apply-templates mode="topicTitle" select="."/>

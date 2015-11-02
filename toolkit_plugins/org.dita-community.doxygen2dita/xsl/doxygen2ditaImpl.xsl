@@ -79,6 +79,7 @@
   <xsl:variable name="compoundKindsToUse" as="xs:string+"
     select="('page', 
              'file',
+             'dir',
              'struct'
              )"
   />
