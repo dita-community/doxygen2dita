@@ -200,7 +200,7 @@
       <xsl:apply-templates select="detaileddescription" mode="makeTopic"/>
       <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('define')]"/>
       <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('typedef')]"/>
-      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = 'enum']"/>
+      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[memberdef[@kind = ('enum')]]"/>
       <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('func')]"/>
     </reference>
   </xsl:template>
@@ -870,10 +870,15 @@
        into groups by kind.
        ========================= -->
 
-  <xsl:template mode="detailedDescriptionSubtopics" match="sectiondef">
+  <xsl:template mode="detailedDescriptionSubtopics" match="sectiondef">    
+    <xsl:variable name="memberType" as="xs:string"
+      select="local:getMemberTypeForSectionType(@kind)"
+    />
     <reference id="{@kind}">
       <title><xsl:value-of select="local:getLabelForKind(@kind, false())"/> Documentation</title>
-      <xsl:apply-templates mode="fullTopics" select="memberdef[normalize-space(detaileddescription) != '']"/>
+      <xsl:apply-templates mode="fullTopics" 
+        select="../sectiondef/memberdef[@kind = $memberType and 
+                                        normalize-space(detaileddescription) != '']"/>
     </reference>
   </xsl:template>
 
@@ -981,6 +986,9 @@ NOTE: The result-document logic is
   </xsl:template>
   
   <xsl:template mode="fullTopics" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef')]">
+    <xsl:if test="@kind = ('enum')">
+      <xsl:message> + [DEBUG] fullTopics: enum <xsl:value-of select="name"/> id="<xsl:value-of select="@id"/>"</xsl:message>
+    </xsl:if>
     <reference id="{local:getId(.)}" outputclass="{@kind}">
       <xsl:apply-templates select="." mode="makeMemberdefDocTitle"/>
       <refbody>

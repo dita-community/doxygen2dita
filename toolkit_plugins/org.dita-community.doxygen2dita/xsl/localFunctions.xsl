@@ -237,4 +237,21 @@
     <xsl:sequence select="$result"/>
   </xsl:function>
   
+  <xsl:function name="local:getMemberTypeForSectionType" as="xs:string?">
+    <xsl:param name="kind" as="xs:string"/>
+    <xsl:variable name="sectionKinds" as="xs:string+" 
+      select="('enum', 'define', 'typedef', 'func', 'user-defined')"
+    />
+    <xsl:variable name="memberKinds" as="xs:string+"
+      select="('enum', 'define', 'typedef', 'funtion', 'unknown')"
+    />
+    <xsl:variable name="p" as="xs:integer*"
+      select="index-of($sectionKinds, $kind)"
+    />
+    <xsl:variable name="result" as="xs:string?"
+      select="$memberKinds[position() = $p]"
+    />
+    <xsl:sequence select="if ($result) then $result else 'unknown'"/>
+  </xsl:function>
+  
 </xsl:stylesheet>

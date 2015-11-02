@@ -139,12 +139,11 @@
   
   <xsl:template mode="generateAncilaryTopicrefs" match="text()"/>
   
-  <xsl:template mode="generateAncilaryTopicrefs" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef')]">
+  <xsl:template mode="generateAncilaryTopicrefs" match="memberdef[@kind = ('define', 'enum', 'typedef')]">
     <!-- memberdefs are chunked within their containing compounddef's 
          topic.
       -->
     <xsl:variable name="topicID" as="xs:string" select="local:getId(.)"/>
-    <xsl:message> + [DEBUG] memberdef, @kind="<xsl:value-of select="@kind"/>", topicID="<xsl:value-of select="$topicID"/>, @id="<xsl:value-of select="@id"/>"</xsl:message>
     <xsl:variable name="topicURI" as="xs:string"
       select="concat('topics/', local:getKey(ancestor::compounddef), '.dita',
                      '#',$topicID)"
@@ -152,7 +151,19 @@
     <xsl:variable name="resultURI" as="xs:string"
       select="relpath:newFile($outdir, $topicURI)"
     />
-    <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"/>
+    <xsl:variable name="hasDetailedDesc" as="xs:boolean"
+      select="not(matches(normalize-space(detaileddescription), '^\s*$'))"
+    />
+    <!-- Only elements that have detailed descriptions will become topics.
+      -->
+    <xsl:choose>
+      <xsl:when test="$hasDetailedDesc">
+        <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- No topic -->
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="*" priority="-1">
