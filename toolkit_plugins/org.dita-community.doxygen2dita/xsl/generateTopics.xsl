@@ -176,6 +176,9 @@
      </refbody>
       <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('public-func')]"/>
       <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('public-attrib')]"/>
+      <!-- Detailed description of the file itself: -->
+      <xsl:apply-templates select="detaileddescription" mode="makeTopic"/>
+      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('public-func')]"/>
     </reference>
   </xsl:template>
   
@@ -644,16 +647,7 @@
   </xsl:template>
   
   <xsl:template match="collaborationgraph | inheritancegraph | incdepgraph">
-    <!-- FIXME: For HTML, the process generates .dot files that are
-         rendered by graphviz. If those graphics are available
-         can reference them here.
-         
-         Or we could generate SVG. But I don't think so.
-         
-      -->
-    <section outputclass="{name(.)}" spectitle="Collaboration Graph">
-      <xsl:apply-templates/>
-    </section>
+    <!-- Suppressing graphs for now. -->
   </xsl:template>
   
   <xsl:template match="node">
@@ -874,6 +868,9 @@
     <xsl:variable name="memberType" as="xs:string"
       select="local:getMemberTypeForSectionType(@kind)"
     />
+    <xsl:if test="$memberType = 'unknown'">
+      <xsl:message> - [WARN] Unknown member type for section type "<xsl:value-of select="@kind"/>"</xsl:message>
+    </xsl:if>
     <reference id="{@kind}">
       <title><xsl:value-of select="local:getLabelForKind(@kind, false())"/> Documentation</title>
       <xsl:apply-templates mode="fullTopics" 
@@ -986,9 +983,6 @@ NOTE: The result-document logic is
   </xsl:template>
   
   <xsl:template mode="fullTopics" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef')]">
-    <xsl:if test="@kind = ('enum')">
-      <xsl:message> + [DEBUG] fullTopics: enum <xsl:value-of select="name"/> id="<xsl:value-of select="@id"/>"</xsl:message>
-    </xsl:if>
     <reference id="{local:getId(.)}" outputclass="{@kind}">
       <xsl:apply-templates select="." mode="makeMemberdefDocTitle"/>
       <refbody>
