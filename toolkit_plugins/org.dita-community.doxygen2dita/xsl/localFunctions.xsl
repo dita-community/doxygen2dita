@@ -243,7 +243,7 @@
       select="('enum', 'define', 'typedef', 'func', 'public-func', 'user-defined')"
     />
     <xsl:variable name="memberKinds" as="xs:string+"
-      select="('enum', 'define', 'typedef', 'funtion', 'function', 'unknown')"
+      select="('enum', 'define', 'typedef', 'function', 'function', 'unknown')"
     />
     <xsl:variable name="p" as="xs:integer*"
       select="index-of($sectionKinds, $kind)"
