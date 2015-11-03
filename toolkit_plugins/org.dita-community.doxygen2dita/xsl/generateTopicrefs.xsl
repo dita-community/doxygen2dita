@@ -18,6 +18,11 @@
       -->
     <xsl:for-each select="$compoundKindsToUse">
       <xsl:variable name="kind" as="xs:string" select="."/>
+      <xsl:variable name="kindsToMatch" as="xs:string+"
+        select="if ($kind = 'struct') 
+                   then ($kind, 'union') 
+                   else ($kind)"
+      />
       <xsl:variable name="topicURI" as="xs:string" select="concat('topics/', $kind, '.dita')"/>
       <xsl:variable name="resultURI" as="xs:string"
         select="relpath:newFile($outdir, $topicURI)"
@@ -50,7 +55,7 @@
           <topicref href="{$topicURI}">
             <xsl:apply-templates
               mode="#current"
-              select="$context/compound[@kind = $kind]"
+              select="$context/compound[@kind = $kindsToMatch]"
             />
           </topicref>
         </xsl:otherwise>
