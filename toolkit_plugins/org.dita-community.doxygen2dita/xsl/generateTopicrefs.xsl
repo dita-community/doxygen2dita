@@ -139,7 +139,7 @@
   
   <xsl:template mode="generateAncilaryTopicrefs" match="text()"/>
   
-  <xsl:template mode="generateAncilaryTopicrefs" match="memberdef[@kind = ('define', 'enum', 'typedef')]">
+  <xsl:template mode="generateAncilaryTopicrefs" match="memberdef[@kind = ('define', 'enum', 'typedef', 'function')]">
     <!-- memberdefs are chunked within their containing compounddef's 
          topic.
       -->
