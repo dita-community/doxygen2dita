@@ -208,6 +208,18 @@
     </reference>
   </xsl:template>
   
+  <xsl:template mode="makeTopic" match="compounddef[@kind = ('struct')]/detaileddescription">
+    <reference id="{local:getId(.)}" outputclass="{name(.)}">
+      <title>Detailed Description</title>
+      <refbody>
+        <section>
+          <xsl:apply-templates select="preceding-sibling::briefdescription/*"/>
+          <xsl:apply-templates/>
+        </section>
+      </refbody>
+    </reference>
+  </xsl:template>
+  
   <xsl:template mode="makeTopic" match="compounddef[@kind = ('file')]/detaileddescription">
     <reference id="{local:getId(.)}" outputclass="{name(.)}">
       <title>Detailed Description</title>
@@ -982,7 +994,10 @@ NOTE: The result-document logic is
     </reference>
   </xsl:template>
   
-  <xsl:template mode="fullTopics" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef')]">
+  <xsl:template mode="fullTopics" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef', 'variable')]">
+    <xsl:if test="@kind = ('variable')">
+      <xsl:message> + [DEBUG] fullTopics: memberDef, @kind="variable"</xsl:message>
+    </xsl:if>
     <reference id="{local:getId(.)}" outputclass="{@kind}">
       <xsl:apply-templates select="." mode="makeMemberdefDocTitle"/>
       <refbody>
