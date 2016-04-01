@@ -18,7 +18,7 @@
        FIXME: Make this into a DITA OT template with appropriate extension points to 
        enable extension via other plugins.
        
-       Copyright (c) 2015 DITA Community
+       Copyright (c) 2015, 2016 DITA Community
        
        Authored by W. Eliot Kimber, ekimber@contrext.com
        
