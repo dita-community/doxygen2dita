@@ -767,6 +767,11 @@
     <ph outputclass="{name(.)}"><xsl:apply-templates/></ph>
   </xsl:template>
   
+  <xsl:template match="para[xrefsect]" mode="#default makeMemberdefEnumeratorSection" priority="10">
+    <!-- Don't emit a <p> in this case as the xrefsect makes a sectiondiv -->
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
   <xsl:template match="para" mode="#default makeMemberdefEnumeratorSection">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:if test="$doDebug">
@@ -862,6 +867,12 @@
     <section spectitle="Program Listing">
       <codeblock><xsl:apply-templates/></codeblock>
     </section>
+  </xsl:template>
+
+  <xsl:template match="para/programlisting" mode="#default makeMemberdefEnumeratorSection" priority="10">
+    <codeblock>
+      <xsl:apply-templates mode="#current"/>
+    </codeblock>
   </xsl:template>
   
   <xsl:template match="programlisting" mode="makeExternalPageLink">
