@@ -399,24 +399,6 @@
     </reference>
   </xsl:template>
     
-  <xsl:template mode="summary" match="memberdef[@kind = ('define')]">
-    <section outputclass="declSummary {@kind}">
-      <sectiondiv outputclass="kind">#<xsl:value-of select="@kind"/></sectiondiv>
-      <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
-      <xsl:if test="param">
-        <sectiondiv outputclass="params">
-          <xsl:apply-templates select="param"/>
-        </sectiondiv>
-      </xsl:if>
-      <xsl:if test="initializer">
-        <sectiondiv outputclass="initializer">
-          <xsl:apply-templates select="initializer"/>
-        </sectiondiv>
-      </xsl:if>
-      <xsl:apply-templates select="briefdescription"/>
-    </section>
-  </xsl:template>
-    
   <xsl:template mode="summary" match="memberdef[@kind = ('variable')]">
     <section outputclass="declSummary {@kind}">
       <sectiondiv outputclass="kind">#<xsl:value-of select="@kind"/></sectiondiv>
@@ -452,12 +434,38 @@
       <xsl:apply-templates select="argstring"/>
       <xsl:apply-templates select="definition"/>
       <xsl:apply-templates select="briefdescription"/>
-      <xsl:if test="detaileddescription">
+      <xsl:if test="normalize-space(detaileddescription) != ''">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
     </section>
   </xsl:template>
+  
+  <xsl:template mode="summary" match="sectiondef[@kind = ('define')]">
+    <reference id="{local:getId(.)}" outputclass="defines"> 
+      <title>Macros</title>
+      <refbody>
+        <xsl:apply-templates select="memberdef[@kind = ('define')]" mode="summary"/>
+      </refbody>
+    </reference>
+  </xsl:template>
 
+  <xsl:template mode="summary" match="memberdef[@kind = ('define')]">
+    <section outputclass="declSummary {@kind}">
+      <sectiondiv outputclass="kind">#define</sectiondiv>
+      <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
+      <xsl:if test="param">
+        <sectiondiv outputclass="parameters">
+          <xsl:apply-templates select="param"/>
+        </sectiondiv>
+      </xsl:if>
+      <xsl:apply-templates select="initializer"/>
+      <xsl:apply-templates select="briefdescription"/>
+      <xsl:if test="normalize-space(detaileddescription) != ''">
+        <xref keyref="{@id}">More...</xref>
+      </xsl:if>
+    </section>
+  </xsl:template>
+  
   <xsl:template mode="summary" match="sectiondef[@kind = ('func')]">
     <reference id="{local:getId(.)}" outputclass="functions">
       <title>Functions</title>
@@ -505,7 +513,7 @@
       </xsl:if>
       <xsl:apply-templates select="definition"/>
       <xsl:apply-templates select="briefdescription"/>
-      <xsl:if test="detaileddescription">
+      <xsl:if test="normalize-space(detaileddescription) != ''">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
     </section>
@@ -528,7 +536,7 @@
         <xsl:apply-templates select="enumvalue"/>
       </sectiondiv>
       <xsl:apply-templates select="briefdescription"/>
-      <xsl:if test="detaileddescription">
+      <xsl:if test="normalize-space(detaileddescription) != ''">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
     </section>
