@@ -23,6 +23,8 @@
   
   <xsl:preserve-space elements="codeblock"/>
   
+  <xsl:key name="elemsByID" match="*[@id]" use="@id"/>
+  
   <xsl:template mode="generateTopics" match="doxygenindex">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
@@ -450,7 +452,9 @@
   </xsl:template>
 
   <xsl:template mode="summary" match="memberdef[@kind = ('define')]">
-    <section outputclass="declSummary {@kind}">
+    <section outputclass="declSummary {@kind}"
+      id="{@id}"
+      >
       <sectiondiv outputclass="kind">#define</sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
       <xsl:if test="param">
@@ -651,17 +655,48 @@
   
   <xsl:template match="ref">
     <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
-    <!-- Assume a ref is a key reference -->
-    <!-- FIXME: Some references are to things in the same result file.
-                Need to distinguish these and generate same-file URL
-                references.
+    
+    <xsl:variable name="doDebug" as="xs:boolean"
+      select="@refid = ('_o_v_r___c_a_p_i__0__6__0_8h_1a026a4136bb5a5b86f0e51c8bff4db490')"
+    />
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] ref: refid="<xsl:value-of select="@refid"/>"</xsl:message>
+    </xsl:if>
+    <xsl:variable name="target" as="element()?"
+      select="key('elemsByID', @refid, root(.))"
+    />
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] ref: target="<xsl:sequence select="$target"/>"</xsl:message>
+    </xsl:if>
+    <!-- Determine if the target is an element that will not generate
+         a separate topic and thus needs to be addressed as a non-topic
+         element within it's parent topic.
       -->
+    <xsl:variable name="isLocalRef" as="xs:boolean"
+      select="boolean($target) and 
+              normalize-space($target/detaileddescription) = ''"
+    />
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] ref: isLocalRef="<xsl:value-of select="$isLocalRef"/>"</xsl:message>
+    </xsl:if>
+    <xsl:variable name="targetKey" as="xs:string"
+      select="if ($isLocalRef)
+                 then local:getKey($target/..)
+                 else local:getKey(.)
+      "
+    />
+    <xsl:variable name="targetID" as="xs:string"
+      select="if ($isLocalRef) 
+                 then concat('/', @refid) 
+                 else ''"
+    />
     <xsl:choose>
       <xsl:when test="$wrapXref">
-        <ph><xref keyref="{local:getKey(.)}" outputclass="{@kindref}"><xsl:apply-templates/></xref></ph>
+        <ph><xref keyref="{$targetKey}{$targetID}" outputclass="{@kindref}"><xsl:apply-templates/></xref></ph>
       </xsl:when>
       <xsl:otherwise>
-        <xref keyref="{local:getKey(.)}" outputclass="{@kindref}"><xsl:apply-templates/></xref>
+        <xref keyref="{$targetKey}{$targetID}" outputclass="{@kindref}"><xsl:apply-templates/></xref>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>

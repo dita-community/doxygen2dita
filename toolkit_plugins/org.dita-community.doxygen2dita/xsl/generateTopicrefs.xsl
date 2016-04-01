@@ -142,6 +142,19 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
+  <xsl:template mode="generateAncilaryTopicrefs" match="sectiondef[@kind = ('define', 'typedef')]">
+    <xsl:variable name="topicID" as="xs:string" select="local:getId(.)"/>
+    <xsl:variable name="topicURI" as="xs:string"
+      select="concat('topics/', local:getKey(ancestor::compounddef), '.dita',
+      '#',$topicID)"
+    />
+
+    <topicref  toc="no" keys="{local:getKey(.)}" href="{$topicURI}">
+      <xsl:apply-templates mode="#current"/>
+    </topicref>
+    
+  </xsl:template>
+  
   <xsl:template mode="generateAncilaryTopicrefs" match="text()"/>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="memberdef[@kind = ('define', 'enum', 'typedef', 'function')]">
