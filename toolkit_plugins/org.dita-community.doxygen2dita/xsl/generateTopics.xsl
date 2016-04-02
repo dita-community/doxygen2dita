@@ -601,7 +601,7 @@
     <!-- Handled in specific modes. Suppress in default mode -->
   </xsl:template>
   
-  <xsl:template mode="summary" match="compounddef/briefdescription" 
+  <xsl:template mode="summary" match="briefdescription" 
                         
     >
     <xsl:apply-templates mode="#current"/>
