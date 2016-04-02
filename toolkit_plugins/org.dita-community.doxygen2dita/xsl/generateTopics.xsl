@@ -402,7 +402,7 @@
   </xsl:template>
     
   <xsl:template mode="summary" match="memberdef[@kind = ('variable')]">
-    <section outputclass="declSummary {@kind}">
+    <section outputclass="declSummary {@kind}" id="{local:getId(.)}">
       <sectiondiv outputclass="kind">#<xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
       <xsl:if test="param">
@@ -596,7 +596,7 @@
       <xsl:call-template name="getSectionDefTitle"/>
     </xsl:variable>
     <xsl:if test="not(normalize-space(.) = '')">
-      <section outputclass="{@kind}">
+      <section outputclass="{@kind}" id="{local:getId(.)}">
         <xsl:if test="normalize-space($title) != ''">
           <xsl:attribute name="spectitle" select="$title"/>
         </xsl:if>
@@ -622,7 +622,7 @@
   </xsl:template>
   
   <xsl:template match="memberdef">
-    <sectiondiv outputclass="{@kind}">
+    <sectiondiv outputclass="{@kind}" id="{local:getId(.)}">
       <sectiondiv outputclass="memberdefinition">
         <xsl:apply-templates select="@*" mode="makeDataElementsFromAttributes"/>
         <xsl:apply-templates mode="#current" 
@@ -654,6 +654,7 @@
   </xsl:template>  
   
   <xsl:template match="ref">
+    <xsl:param name="sourceDocs" as="document-node()*" tunnel="yes"/>
     <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <xsl:variable name="doDebug" as="xs:boolean"
@@ -663,9 +664,21 @@
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] ref: refid="<xsl:value-of select="@refid"/>"</xsl:message>
     </xsl:if>
-    <xsl:variable name="target" as="element()?"
-      select="key('elemsByID', @refid, root(.))"
-    />
+    
+    <xsl:variable name="refid" as="xs:string" select="@refid"/>
+    
+    <xsl:variable name="targets" as="element()*"
+      
+    >
+      <!-- Look across all the source docs for the target. 
+        
+        -->
+      <xsl:for-each select="$sourceDocs">
+        <xsl:sequence select="key('elemsByID', $refid, .)"/>
+      </xsl:for-each>
+    </xsl:variable>
+    <!-- Get the first target in case there are multiples (which should never happen): -->
+    <xsl:variable name="target" as="element()?" select="$targets[1]"/>
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] ref: target="<xsl:sequence select="$target"/>"</xsl:message>
     </xsl:if>
@@ -675,6 +688,7 @@
       -->
     <xsl:variable name="isLocalRef" as="xs:boolean"
       select="boolean($target) and 
+              $target/@kind = ('typedef') and 
               normalize-space($target/detaileddescription) = ''"
     />
     <xsl:if test="$doDebug">
@@ -788,6 +802,10 @@
     <xsl:for-each-group select="node()" group-ending-with="linebreak">
       <p><xsl:apply-templates select="current-group()"/></p>
     </xsl:for-each-group>
+  </xsl:template>
+  
+  <xsl:template match="verbatim">
+    <codeblock><xsl:apply-templates/></codeblock>
   </xsl:template>
   
   <xsl:template match="ulink">

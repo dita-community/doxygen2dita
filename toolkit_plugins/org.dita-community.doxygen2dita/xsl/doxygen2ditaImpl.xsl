@@ -25,6 +25,7 @@
   <xsl:import href="fallbackTemplates.xsl"/>
   <xsl:import href="generateKeydefs.xsl"/>
   <xsl:import href="generateTopicrefs.xsl"/>
+  <xsl:import href="collectSourceDocs.xsl"/>
   <xsl:import href="generateTopics.xsl"/>
   <xsl:import href="localFunctions.xsl"/>
   
@@ -99,20 +100,40 @@
   </xsl:template>
   
   <xsl:template match="doxygenindex">
+    <xsl:variable name="sourceDocs" as="document-node()*">
+      <xsl:call-template name="collect-source-docs"/>
+    </xsl:variable>
+    
+    <xsl:if test="false()">      
+      <xsl:message> + [DEBUG] Source docs:</xsl:message>
+      <xsl:for-each select="$sourceDocs">
+        <xsl:message> + [DEBUG] <xsl:value-of select="position()"/>: <xsl:value-of select="document-uri(.)"/></xsl:message>
+      </xsl:for-each>
+    </xsl:if>
+    
     <map>
       <title><xsl:value-of select="$mapTitle"/></title>
       <topicgroup outputclass="keydefs"><xsl:comment> Key definitions </xsl:comment>
-          <xsl:apply-templates mode="generateKeyDefinitions" select="."/>
+          <xsl:apply-templates mode="generateKeyDefinitions" select=".">
+            <xsl:with-param name="sourceDocs" as="document-node()*" tunnel="yes" select="$sourceDocs"/>
+          </xsl:apply-templates>
       </topicgroup>
       <topicgroup outputclass="pubbody"><xsl:comment> Publication body </xsl:comment>
-        <xsl:apply-templates mode="generateTopicrefs" select="."/>
+        <xsl:apply-templates mode="generateTopicrefs" select=".">
+          <xsl:with-param name="sourceDocs" as="document-node()*" tunnel="yes" select="$sourceDocs"/>
+        </xsl:apply-templates>
       </topicgroup>
       <topicgroup outputclass="ancilary-topics" toc="no">
-        <xsl:apply-templates mode="generateAncilaryTopicrefs" select="."/>
+        <xsl:apply-templates mode="generateAncilaryTopicrefs" select=".">
+          <xsl:with-param name="sourceDocs" as="document-node()*" tunnel="yes" select="$sourceDocs"/>
+        </xsl:apply-templates>
       </topicgroup>
     </map>
     <!-- Now generate the result topics -->
-    <xsl:apply-templates mode="generateTopics" select="."/>
+    <xsl:apply-templates mode="generateTopics" select=".">
+      <xsl:with-param name="sourceDocs" as="document-node()*" tunnel="yes" select="$sourceDocs"/>
+    </xsl:apply-templates>
   </xsl:template>
+  
   
 </xsl:stylesheet>
