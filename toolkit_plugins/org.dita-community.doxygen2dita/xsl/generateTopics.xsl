@@ -300,20 +300,41 @@
   </xsl:template>
   
   <xsl:template match="innerclass" mode="summary">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] summary: innerclass: <xsl:value-of select="."/></xsl:message>
+    </xsl:if>
+    
     <xsl:variable name="sourceURI" as="xs:string"
          select="concat(@refid, '.xml')"
     />
     <xsl:variable name="sourceDoc" as="document-node()?"
       select="document($sourceURI, .)"
     />
-    <xsl:apply-templates select="$sourceDoc/*/compounddef" mode="#current"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] summary: innerclass: sourceDoc=<xsl:value-of select="document-uri($sourceDoc)"/></xsl:message>
+    </xsl:if>
+    <xsl:apply-templates select="$sourceDoc/*/compounddef" mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template mode="summary" match="compounddef">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] summary: compounddef, id="<xsl:value-of select="@id"/>"</xsl:message>
+    </xsl:if>
+    
     <section outputclass="declSummary {@kind}">
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="compoundname"/></sectiondiv>
-      <xsl:apply-templates select="briefdescription"/>
+      <xsl:apply-templates select="briefdescription">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
       <p outputclass="more-link"><xref keyref="{@id}">More...</xref></p>
     </section>
   </xsl:template>
@@ -1085,6 +1106,8 @@ NOTE: The result-document logic is
   </xsl:template>
   
   <xsl:template mode="makeMemberdefDocTopic" match="briefdescription | detaileddescription">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <xsl:apply-templates select="* except (para[parameterlist | simplesect])"/>
   </xsl:template>
   
@@ -1198,27 +1221,39 @@ NOTE: The result-document logic is
   </xsl:template>
 
   <xsl:template mode="makeMemberdefEnumeratorSection" match="enumvalue">
-    <row>
-      <entry>
-        <xsl:apply-templates select="name" mode="makeMemberdefDocTitle"/>
-      </entry>
-      <entry>
-        <xsl:apply-templates select="briefdescription, detaileddescription"
-          mode="#current"
-        >
-          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-        </xsl:apply-templates>
-      </entry>
-    </row>
+    <!-- Don't create a row if there's no brief description -->
+    <xsl:if test="normalize-space(briefdescription) != ''">
+      <row>
+        <entry>
+          <xsl:apply-templates select="name" mode="makeMemberdefDocTitle"/>
+        </entry>
+        <entry>
+          <xsl:apply-templates select="briefdescription, detaileddescription"
+            mode="#current"
+            >
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+          </xsl:apply-templates>
+        </entry>
+      </row>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template mode="makeMemberdefEnumeratorSection" match="briefdescription | detaileddescription">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] makeMemberdefEnumeratorSection: Got <xsl:value-of select="concat(name(..), '/', name(.))"/>, applying templates in same mode.</xsl:message>
     </xsl:if>
     <xsl:apply-templates mode="#current">
       <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  
+  <xsl:template match="briefdescription">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:apply-templates>
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     </xsl:apply-templates>
   </xsl:template>
   
