@@ -457,7 +457,7 @@
       <xsl:apply-templates select="argstring"/>
       <xsl:apply-templates select="definition"/>
       <xsl:apply-templates select="briefdescription"/>
-      <xsl:if test="normalize-space(detaileddescription) != ''">
+      <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
     </section>
@@ -485,7 +485,7 @@
       </xsl:if>
       <xsl:apply-templates select="initializer"/>
       <xsl:apply-templates select="briefdescription"/>
-      <xsl:if test="normalize-space(detaileddescription) != ''">
+      <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
     </section>
@@ -538,7 +538,7 @@
       </xsl:if>
       <xsl:apply-templates select="definition"/>
       <xsl:apply-templates select="briefdescription"/>
-      <xsl:if test="normalize-space(detaileddescription) != ''">
+      <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
     </section>
@@ -561,7 +561,7 @@
         <xsl:apply-templates select="enumvalue"/>
       </sectiondiv>
       <xsl:apply-templates select="briefdescription"/>
-      <xsl:if test="normalize-space(detaileddescription) != ''">
+      <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
     </section>
@@ -616,7 +616,7 @@
     <xsl:variable name="title">
       <xsl:call-template name="getSectionDefTitle"/>
     </xsl:variable>
-    <xsl:if test="not(normalize-space(.) = '')">
+    <xsl:if test="not(matches(., '^\s*$'))">
       <section outputclass="{@kind}" id="{local:getId(.)}">
         <xsl:if test="normalize-space($title) != ''">
           <xsl:attribute name="spectitle" select="$title"/>
@@ -710,7 +710,7 @@
     <xsl:variable name="isLocalRef" as="xs:boolean"
       select="boolean($target) and 
               $target/@kind = ('typedef') and 
-              normalize-space($target/detaileddescription) = ''"
+              matches($target/detaileddescription, '^\s*$')"
     />
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] ref: isLocalRef="<xsl:value-of select="$isLocalRef"/>"</xsl:message>
@@ -786,6 +786,12 @@
            briefdescription | 
            detaileddescription | 
            inbodydescription">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] <xsl:value-of select="name(.)"/>: normalize-space(.) != '' = <xsl:value-of select="normalize-space(.) != ''"/>"</xsl:message>
+    </xsl:if>
+    
     <xsl:choose>
       <xsl:when test="normalize-space(.) != ''">
         <sectiondiv outputclass="{name(.)}">
@@ -980,7 +986,7 @@
       <title><xsl:value-of select="local:getLabelForKind(@kind, false())"/> Documentation</title>
       <xsl:apply-templates mode="fullTopics" 
         select="../sectiondef/memberdef[@kind = $memberType and 
-                                        normalize-space(detaileddescription) != '']"/>
+                                        not(matches(detaileddescription, '^\s*$'))]"/>
     </reference>
   </xsl:template>
 
@@ -1190,39 +1196,57 @@ NOTE: The result-document logic is
   </xsl:template>
 
   <xsl:template mode="makeMemberdefEnumeratorSection" match="memberdef[enumvalue]" priority="10">
-    <section outputclass="enumerators">
-      <table
-        frame="all"
-        rowsep="1"
-        colsep="1">
-        <tgroup
-          cols="2">
-          <colspec
-            colname="c1"
-            colnum="1"
-            colwidth="1.0*"/>
-          <colspec
-            colname="c2"
-            colnum="2"
-            colwidth="1.0*"/>
-          <thead>
-            <row>
-              <entry
-                namest="c1"
-                nameend="c2">Enumerator</entry>
-            </row>
-          </thead>
-          <tbody>
-            <xsl:apply-templates mode="makeMemberdefEnumeratorSection" select="enumvalue"/>
-          </tbody>
-        </tgroup>
-      </table>
-    </section>
+    
+    <xsl:variable name="rows" as="element()*">
+      <xsl:apply-templates mode="makeMemberdefEnumeratorSection" select="enumvalue"/>
+    </xsl:variable>
+    
+    <!-- Only generate the table if there are rows. -->
+    
+    <xsl:if test="count($rows) > 0">
+      <section outputclass="enumerators">
+        <table
+          frame="all"
+          rowsep="1"
+          colsep="1">
+          <tgroup
+            cols="2">
+            <colspec
+              colname="c1"
+              colnum="1"
+              colwidth="1.0*"/>
+            <colspec
+              colname="c2"
+              colnum="2"
+              colwidth="1.0*"/>
+            <thead>
+              <row>
+                <entry
+                  namest="c1"
+                  nameend="c2">Enumerator</entry>
+              </row>
+            </thead>
+            <tbody>
+              <xsl:sequence select="$rows"/>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+    </xsl:if>
+    
   </xsl:template>
 
   <xsl:template mode="makeMemberdefEnumeratorSection" match="enumvalue">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+        
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] makeMemberdefEnumeratorSection: enumvalue = <xsl:value-of select="name"/></xsl:message>
+      <xsl:message> + [DEBUG] makeMemberdefEnumeratorSection: enumvalue = briefdescription = "<xsl:value-of select="briefdescription"/>"</xsl:message>
+      <xsl:message> + [DEBUG] makeMemberdefEnumeratorSection: not(matches(briefdescription, '^\s*$'))=<xsl:value-of select="not(matches(briefdescription, '^\s*$'))"/></xsl:message>
+      
+    </xsl:if>
     <!-- Don't create a row if there's no brief description -->
-    <xsl:if test="normalize-space(briefdescription) != ''">
+    <xsl:if test="not(matches(briefdescription, '^\s*$'))">
       <row>
         <entry>
           <xsl:apply-templates select="name" mode="makeMemberdefDocTitle"/>
@@ -1246,14 +1270,6 @@ NOTE: The result-document logic is
     </xsl:if>
     <xsl:apply-templates mode="#current">
       <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-    </xsl:apply-templates>
-  </xsl:template>
-  
-  <xsl:template match="briefdescription">
-    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    
-    <xsl:apply-templates>
-      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     </xsl:apply-templates>
   </xsl:template>
   
