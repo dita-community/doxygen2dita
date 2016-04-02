@@ -151,14 +151,14 @@
     <table class="memberdecls">
       <tbody>
         <xsl:for-each select="*[@outputclass = ('variable')]">
-          <xsl:call-template name="varibalediv"/>
+          <xsl:call-template name="variablediv"/>
         </xsl:for-each>
       </tbody>
     </table>
     
     <xsl:call-template name="detailedDescription"></xsl:call-template>
   </xsl:template>
-  <xsl:template name="varibalediv">
+  <xsl:template name="variablediv">
     <tr class="memitem:a0cbc54a3238dea8110e869897b93a4b9">
       <xsl:choose>
         <xsl:when test="sectiondiv/sectiondiv[@outputclass = 'type']/xref">
@@ -226,7 +226,7 @@
     <!-- Literal class values are taken from doxygen-generated HTML -->
     <table class="memberdecls">
       <tbody>
-        <tr class="memitem">
+        <tr class="memitem:">
           <td class="memItemLeft">
             <xsl:apply-templates
               select="*[contains(@class, ' topic/sectiondiv ')]
@@ -240,6 +240,14 @@
             <div class="moreinfo">
               <xsl:apply-templates select="*[contains(@class, ' topic/xref ')]"/>
             </div>
+          </td>
+        </tr>
+        <tr class="memdesc:">
+          <td class="mdescLeft">&#xa0;</td>
+          <td class="mdescRight">
+            <xsl:apply-templates
+              select="*[contains(@class, ' topic/sectiondiv ')]
+              [@outputclass = 'briefdescription']"/>
           </td>
         </tr>
       </tbody>

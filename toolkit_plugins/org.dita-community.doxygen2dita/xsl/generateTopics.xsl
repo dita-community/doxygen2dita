@@ -341,13 +341,14 @@
       <!-- Brief descriptions appear to have either zero or one paragraphs, so this
            logic should be safe
         -->
-      <p>
-        <xsl:apply-templates select="briefdescription" mode="#current">
-          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-        </xsl:apply-templates>
-        <xref outputclass="more-link" keyref="{@id}">More...</xref>
-      </p>
-      
+      <sectiondiv outputclass="briefdescription">
+        <p>
+          <xsl:apply-templates select="briefdescription" mode="#current">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>
+          <xref outputclass="more-link" keyref="{@id}">More...</xref>
+        </p>
+      </sectiondiv>
     </section>
   </xsl:template>
   
@@ -601,10 +602,16 @@
     <!-- Handled in specific modes. Suppress in default mode -->
   </xsl:template>
   
+  <xsl:template mode="summary" match="compounddef/briefdescription" priority="10">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+
   <xsl:template mode="summary" match="briefdescription" 
                         
     >
-    <xsl:apply-templates mode="#current"/>
+    <sectiondiv outputclass="{name(.)}">    
+      <xsl:apply-templates mode="#current"/>
+    </sectiondiv>
   </xsl:template>
   
   <xsl:template mode="summary" match="compounddef/briefdescription/para" priority="10">
