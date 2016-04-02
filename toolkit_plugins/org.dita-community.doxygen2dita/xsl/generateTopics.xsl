@@ -463,7 +463,7 @@
   </xsl:template>
   
   <xsl:template mode="summary" match="memberdef[@kind = ('typedef')]">
-    <section outputclass="declSummary {@kind}">
+    <section outputclass="declSummary {@kind}" id="{@id}">
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="type"><xsl:apply-templates select="type"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
@@ -487,7 +487,7 @@
 
   <xsl:template mode="summary" match="memberdef[@kind = ('define')]">
     <section outputclass="declSummary {@kind}"
-      id="{@id}"
+      id="{local:getId(.)}"
       >
       <sectiondiv outputclass="kind">#define</sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
@@ -539,7 +539,7 @@
   </xsl:template>
 
   <xsl:template mode="summary" match="memberdef[@kind = ('function')]">
-    <section outputclass="declSummary {@kind}">
+    <section outputclass="declSummary {@kind}" id="{local:getId(.)}">
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="type"><xsl:apply-templates select="type"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
@@ -567,7 +567,7 @@
   </xsl:template>
   
   <xsl:template mode="summary" match="memberdef[@kind = ('enum')]">
-    <section outputclass="declSummary {@kind}">
+    <section outputclass="declSummary {@kind}" id="{local:getId(.)}">
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
       <sectiondiv outputclass="enumvalues">

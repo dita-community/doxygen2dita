@@ -52,7 +52,7 @@
               </body>
             </topic>
           </xsl:result-document>
-          <topicref href="{$topicURI}">
+          <topicref href="{$topicURI}" outputclass="compoundset {.}">
             <xsl:apply-templates
               mode="#current"
               select="$context/compound[@kind = $kindsToMatch]"
@@ -93,7 +93,7 @@
         <xsl:message> + [INFO] Source document <xsl:value-of select="$sourceURI"/> has no content, skipping.</xsl:message>
       </xsl:when>
       <xsl:otherwise>
-        <topicref keys="{$keyName}"
+        <topicref keys="{$keyName}"  outputclass="{name(.)} {@kind}"
             href="{$topicURI}"
         >
           <xsl:apply-templates mode="#current"/>
@@ -135,10 +135,16 @@
     <xsl:result-document href="{$resultURI}" format="topic">
       <xsl:apply-templates select="." mode="fullTopics"/>
     </xsl:result-document>
-    <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"/>
+    <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"  outputclass="{name(.)} {@kind}"/>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="sectiondef">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="generateAncilaryTopicrefs" priority="10"
+    match="compounddef[@kind = ('union')]/sectiondef[@kind = ('public-attrib')]">
+    <!-- public-attrib sectiondefs don't make topics within union compounddefs -->
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -149,7 +155,7 @@
       '#',$topicID)"
     />
 
-    <topicref  toc="no" keys="{local:getKey(.)}" href="{$topicURI}">
+    <topicref  toc="no" keys="{local:getKey(.)}" href="{$topicURI}" outputclass="{name(.)} {@kind}">
       <xsl:apply-templates mode="#current"/>
     </topicref>
     
@@ -176,7 +182,7 @@
       -->
     <xsl:choose>
       <xsl:when test="$hasDetailedDesc">
-        <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"/>
+        <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}" outputclass="{name(.)} {@kind}"/>
       </xsl:when>
       <xsl:otherwise>
         <!-- No topic -->
