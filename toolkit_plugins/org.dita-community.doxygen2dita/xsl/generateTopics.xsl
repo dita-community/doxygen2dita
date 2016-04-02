@@ -317,6 +317,12 @@
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] summary: innerclass: sourceDoc=<xsl:value-of select="document-uri($sourceDoc)"/></xsl:message>
     </xsl:if>
+    <xsl:if test="not($sourceDoc)">
+      <xsl:message> - [WARN] Failed to find document for inner class with URI "<xsl:value-of select="$sourceURI"/>"</xsl:message>
+    </xsl:if>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] summary: innerclass: Applying templates to $sourceDoc/*/compounddef in mode "summary".</xsl:message>
+    </xsl:if>
     <xsl:apply-templates select="$sourceDoc/*/compounddef" mode="#current">
       <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
     </xsl:apply-templates>
@@ -332,10 +338,16 @@
     <section outputclass="declSummary {@kind}">
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="compoundname"/></sectiondiv>
-      <xsl:apply-templates select="briefdescription">
-        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-      </xsl:apply-templates>
-      <p outputclass="more-link"><xref keyref="{@id}">More...</xref></p>
+      <!-- Brief descriptions appear to have either zero or one paragraphs, so this
+           logic should be safe
+        -->
+      <p>
+        <xsl:apply-templates select="briefdescription" mode="#current">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+        <xref outputclass="more-link" keyref="{@id}">More...</xref>
+      </p>
+      
     </section>
   </xsl:template>
   
@@ -436,7 +448,7 @@
           <xsl:apply-templates select="initializer"/>
         </sectiondiv>
       </xsl:if>
-      <xsl:apply-templates select="briefdescription"/>
+      <xsl:apply-templates select="briefdescription" mode="#current"/>
     </section>
   </xsl:template>
     
@@ -444,7 +456,7 @@
     <reference id="{local:getId(.)}" outputclass="typedefs"> 
       <title>Typedefs</title>
       <refbody>
-        <xsl:apply-templates select="memberdef[@kind = ('typedef')]" mode="summary"/>
+        <xsl:apply-templates select="memberdef[@kind = ('typedef')]" mode="#current"/>
       </refbody>
     </reference>
   </xsl:template>
@@ -456,7 +468,7 @@
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
       <xsl:apply-templates select="argstring"/>
       <xsl:apply-templates select="definition"/>
-      <xsl:apply-templates select="briefdescription"/>
+      <xsl:apply-templates select="briefdescription" mode="#current"/>
       <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
@@ -467,7 +479,7 @@
     <reference id="{local:getId(.)}" outputclass="defines"> 
       <title>Macros</title>
       <refbody>
-        <xsl:apply-templates select="memberdef[@kind = ('define')]" mode="summary"/>
+        <xsl:apply-templates select="memberdef[@kind = ('define')]" mode="#current"/>
       </refbody>
     </reference>
   </xsl:template>
@@ -484,7 +496,7 @@
         </sectiondiv>
       </xsl:if>
       <xsl:apply-templates select="initializer"/>
-      <xsl:apply-templates select="briefdescription"/>
+      <xsl:apply-templates select="briefdescription" mode="#current"/>
       <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
@@ -537,7 +549,7 @@
         </sectiondiv>  
       </xsl:if>
       <xsl:apply-templates select="definition"/>
-      <xsl:apply-templates select="briefdescription"/>
+      <xsl:apply-templates select="briefdescription" mode="#current"/>
       <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
@@ -548,7 +560,7 @@
     <reference id="{local:getId(.)}" outputclass="enumerations"> 
       <title>Enumerations</title>
       <refbody>
-        <xsl:apply-templates select="memberdef[@kind = ('enum')]" mode="summary"/>
+        <xsl:apply-templates select="memberdef[@kind = ('enum')]" mode="#current"/>
       </refbody>
     </reference>
   </xsl:template>
@@ -560,7 +572,7 @@
       <sectiondiv outputclass="enumvalues">
         <xsl:apply-templates select="enumvalue"/>
       </sectiondiv>
-      <xsl:apply-templates select="briefdescription"/>
+      <xsl:apply-templates select="briefdescription" mode="#current"/>
       <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
@@ -587,6 +599,24 @@
                        compounddef/compoundname"
     >
     <!-- Handled in specific modes. Suppress in default mode -->
+  </xsl:template>
+  
+  <xsl:template mode="summary" match="compounddef/briefdescription" 
+                        
+    >
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="summary" match="compounddef/briefdescription/para" priority="10">
+    <xsl:apply-templates/>
+  </xsl:template>
+  
+  <xsl:template mode="summary" match="briefdescription/para">
+    <p><xsl:apply-templates/></p>
+  </xsl:template>
+  
+  <xsl:template mode="summary" match="text()">
+    <xsl:sequence select="."/>
   </xsl:template>
   
   <xsl:template match="compounddef/detaileddescription | 
