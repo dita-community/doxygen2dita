@@ -148,7 +148,17 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
-  <xsl:template mode="generateAncilaryTopicrefs" match="sectiondef[@kind = ('define', 'typedef', 'public-attrib')]">
+  <xsl:template mode="generateAncilaryTopicrefs" priority="10"
+    match="sectiondef[@kind = ('user-defined')][memberdef[@kind = 'enum']]"
+    >
+    <!-- This sectiondef doesn't generate a topic as all the enum definitions
+         collected under a generated topic with the ID "enum".
+      -->
+  </xsl:template>
+  
+  <xsl:template mode="generateAncilaryTopicrefs" 
+      match="sectiondef[@kind = ('define', 'typedef', 'public-attrib', 'user-defined')]"
+    >
     <xsl:variable name="topicID" as="xs:string" select="local:getId(.)"/>
     <xsl:variable name="topicURI" as="xs:string"
       select="concat('topics/', local:getKey(ancestor::compounddef), '.dita',

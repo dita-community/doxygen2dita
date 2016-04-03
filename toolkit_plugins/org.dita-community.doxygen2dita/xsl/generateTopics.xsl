@@ -302,8 +302,6 @@
   <xsl:template match="innerclass" mode="summary">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
-    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
-    
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] summary: innerclass: <xsl:value-of select="."/></xsl:message>
     </xsl:if>
@@ -584,7 +582,7 @@
     <xsl:if test="count(preceding-sibling::enumvalue) gt 0">
       <xsl:text>, </xsl:text>
     </xsl:if>
-    <ph outputclass="{name(.)}">
+    <ph outputclass="{name(.)}" id="{local:getId(.)}">
       <ph outputclass="name"><xsl:value-of select="name"/></ph>
       <ph outputclass="initializer"><xsl:value-of select="initializer"/></ph>
     </ph>
@@ -712,11 +710,12 @@
   </xsl:template>  
   
   <xsl:template match="ref">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="sourceDocs" as="document-node()*" tunnel="yes"/>
     <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <xsl:variable name="doDebug" as="xs:boolean"
-      select="@refid = ('_o_v_r___c_a_p_i__0__6__0_8h_1a026a4136bb5a5b86f0e51c8bff4db490')"
+      select="string(@refid) = ('_o_v_r___c_a_p_i_8h_1a026a4136bb5a5b86f0e51c8bff4db490')"
     />
     
     <xsl:if test="$doDebug">
@@ -738,7 +737,8 @@
     <!-- Get the first target in case there are multiples (which should never happen): -->
     <xsl:variable name="target" as="element()?" select="$targets[1]"/>
     <xsl:if test="$doDebug">
-      <xsl:message> + [DEBUG] ref: target="<xsl:sequence select="$target"/>"</xsl:message>
+      <xsl:message> + [DEBUG] ref: target: <xsl:value-of select="$target/@kind"/> (<xsl:value-of select="$target/name"/>)</xsl:message>
+      <xsl:message> + [DEBUG] ref: containing doc: <xsl:value-of select="document-uri(root($target))"/></xsl:message>
     </xsl:if>
     <!-- Determine if the target is an element that will not generate
          a separate topic and thus needs to be addressed as a non-topic
@@ -746,15 +746,24 @@
       -->
     <xsl:variable name="isLocalRef" as="xs:boolean"
       select="boolean($target) and 
-              $target/@kind = ('typedef') and 
+              (($target/@kind = ('typedef', 'enum', 'define', 'function', 'variable')) or
+               ($target/self::enumvalue)
+              ) and 
               matches($target/detaileddescription, '^\s*$')"
     />
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] ref: isLocalRef="<xsl:value-of select="$isLocalRef"/>"</xsl:message>
     </xsl:if>
+    <xsl:variable name="parentTopicGenerator" as="element()"      
+    >
+      <xsl:apply-templates mode="getTopicMakingParent" select="$target">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    
     <xsl:variable name="targetKey" as="xs:string"
       select="if ($isLocalRef)
-                 then local:getKey($target/..)
+                 then local:getKey($parentTopicGenerator)
                  else local:getKey(.)
       "
     />
@@ -771,6 +780,23 @@
         <xref keyref="{$targetKey}{$targetID}" outputclass="{@kindref}"><xsl:apply-templates/></xref>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template mode="getTopicMakingParent" match="enumvalue" as="element()">
+    <xsl:apply-templates select=".." mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="getTopicMakingParent" match="memberdef" as="element()">
+    <xsl:sequence 
+      select="if (matches(detaileddescription, '^\s*$'))
+                 then ..
+                 else .
+      "
+    />
+  </xsl:template>
+  
+  <xsl:template mode="getTopicMakingParent" match="*" priority="-1" as="element()">
+    <xsl:sequence select=".."/>
   </xsl:template>
   
   <xsl:template match="collaborationgraph | inheritancegraph | incdepgraph">

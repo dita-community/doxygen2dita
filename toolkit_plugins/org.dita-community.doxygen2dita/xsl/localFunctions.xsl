@@ -50,19 +50,28 @@
     <xsl:sequence select="$result"/>
   </xsl:function>
 
- <!-- Returns a value for use in @id attributes from
+<!-- Returns a value for use in @id attributes from
       the context element.
     -->
   <xsl:function name="local:getId" as="xs:string">
     <xsl:param name="context" as="element()"/>
 
-    <xsl:variable name="result" as="xs:string"
-      select="if ($context/@id) 
-                 then replace($context/@id, '/', '_')
-                 else generate-id($context)"
-    />    
+    <xsl:variable name="result" as="xs:string">
+      <xsl:apply-templates select="$context" mode="local:getId">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+      </xsl:apply-templates>
+    </xsl:variable>
     <xsl:sequence select="$result"/>
   </xsl:function>
+  
+  <xsl:template mode="local:getId" match="*" as="xs:string" priority="-1">
+    <xsl:variable name="result" as="xs:string"
+      select="if (@id) 
+      then replace(@id, '/', '_')
+      else generate-id(.)"
+    />    
+    <xsl:sequence select="$result"/>
+  </xsl:template>
 
   <xsl:template mode="local:getKey" match="compound">
     <xsl:variable name="result" as="xs:string"
