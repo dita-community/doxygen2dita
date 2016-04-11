@@ -30,7 +30,7 @@
   <xsl:template name="gen-user-header">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
 
-    <xsl:if test="true() or $doDebug">
+    <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] input.map.url="<xsl:value-of select="$input.map.url"/>"</xsl:message>
       <xsl:message> + [DEBUG] inputMapDoc=<xsl:value-of select="$inputMapDoc"/></xsl:message>
     </xsl:if>
@@ -73,7 +73,11 @@
                   <xsl:sequence select="if ($prodname) then $prodname else 'ProductName'"/>
                   &#xa0;<span id="projectnumber"><xsl:value-of select="$projectnumber"/></span>
                 </div>
-                <div id="projectbrief">LibOVR Reference Manual</div>
+                <div id="projectbrief">
+                  <xsl:apply-templates
+                    select="$inputMapDoc/*/*[contains(@class, ' topic/title ')]/node()"
+                  />
+                </div>
               </td>
             </tr>
           </tbody>
