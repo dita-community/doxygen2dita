@@ -25,7 +25,8 @@
 
   <feature extension="dita.conductor.target.relative" value="build.xml" type="file"/>
   <feature extension="depend.preprocess.copy-files.pre" value="doxygen-copy"/>
+  <template file="build_template.xml"/>
   
-  
+  <feature extension="dita.conductor.xhtml.param" file="parameters.xml"/>  
       
 </plugin>

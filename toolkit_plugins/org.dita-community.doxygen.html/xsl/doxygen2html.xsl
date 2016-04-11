@@ -10,34 +10,43 @@
        This mostly just overrides base templates. It is structured as a separate transformation
        type so that it doesn't globally override normal HTML output.
        
+       It does not directly include the doxygen2htmlOverrides.xsl
+       because that module is a global override that is included 
+       using the normal XHTML extension point.
+       
        Copyright (c) 2015, 2016 DITA Community
        ====================================================================================== -->
   
   <xsl:import href="plugin:org.dita.xhtml:xsl/dita2xhtml.xsl"/>
   
-  <!-- NOTE: This is the top-level XSLT for the doxygen-html transformation
-             type. It does not directly include the doxygen2htmlOverrides.xsl
-             because that module is a global override that is included 
-             using the normal XHTML extension point.
-             
-             This module only modifies those things that are specific to
-             Doxygen-style HTML output and that would not be appropriate for
-             HTML output generally.
-    -->
-
+  <xsl:param name="input.map.url" as="xs:string?"/>
+  
+  <xsl:variable name="inputMapDoc" as="document-node()?"
+    select="if ($input.map.url) 
+               then document($input.map.url) 
+               else ()"
+  />
+  
   <xsl:template name="gen-user-header">
-    
-<xsl:param name="topicref" as="element()*" tunnel="yes" select="()"/>        
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+
+    <xsl:if test="true() or $doDebug">
+      <xsl:message> + [DEBUG] input.map.url="<xsl:value-of select="$input.map.url"/>"</xsl:message>
+      <xsl:message> + [DEBUG] inputMapDoc=<xsl:value-of select="$inputMapDoc"/></xsl:message>
+    </xsl:if>
+
     <xsl:variable name="prodname"
-      select="root($topicref)/*/*[contains(@class, ' map/topicmeta ')]/
-      *[contains(@class, ' topic/prodinfo ')]/
-      *[contains(@class, ' topic/prodname ')]"
+      select="$inputMapDoc/*/*[contains(@class, ' map/topicmeta ')]/
+                              *[contains(@class, ' topic/metadata ')]/
+                              *[contains(@class, ' topic/prodinfo ')]/
+                              *[contains(@class, ' topic/prodname ')]"
     />   
     <xsl:variable name="vrm"
-      select="root($topicref)/*/*[contains(@class, ' map/topicmeta ')]/
-      *[contains(@class, ' topic/prodinfo ')]/
-      *[contains(@class, ' topic/vrmlist ')]/
-      *[contains(@class, ' topic/vrm ')][1]"
+      select="$inputMapDoc/*/*[contains(@class, ' map/topicmeta ')]/
+                              *[contains(@class, ' topic/metadata ')]/
+                              *[contains(@class, ' topic/prodinfo ')]/
+                              *[contains(@class, ' topic/vrmlist ')]/
+                              *[contains(@class, ' topic/vrm ')][1]"
     />   
     <xsl:variable name="projectnumber" as="xs:string"
       select="if ($vrm)
