@@ -9,10 +9,21 @@
 
   <property name="clean.output" value="yes"/>
   <property name="clean.temp" value="yes"/>
+  
+  <target name="dita2doxygen-html"
+    unless="noMap"    
+    >
+    <antcall target="dita2xhtml">
+      <param name="args.hide.parent.link" value="true"/>
+      <param name="include.rellinks" value="false"/>
+      <param name="args.xsl" value="${dita.plugin.org.dita-community.doxygen.html.dir}/xsl/doxygen2html.xsl"/>
+    </antcall>
+  </target>
+  
 
   <!-- Used during preprocessing to copy Doxygen-specific files -->
   <target name="doxygen-copy" >
-    <echo message="--------- Doxugen build ----------------" />
+    <echo message="--------- Doxygen build ----------------" />
     <echo message="doxygen.resources : '${doxygen.resources}" />
     <echo message="args.cssroot : '${args.cssroot}" />
     
