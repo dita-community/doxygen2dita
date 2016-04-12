@@ -100,7 +100,7 @@
   </xsl:template>
 
   <xsl:template match="compounddef">
-    <reference id="{local:getId(.)}">
+    <reference id="{local:getId(.)}" outputclass="{@kind}">
       <xsl:apply-templates mode="topicTitle" select="."/>
       <xsl:apply-templates mode="shortDesc" select="."/>
       <prolog>
@@ -290,7 +290,7 @@
     -->
     <xsl:if
       test="innerclass">
-      <reference id="{local:getId(.)}_data-structures" outputclass="{@kind}">
+      <reference id="{local:getId(.)}_data-structures" outputclass="struct declSummary">
         <title>Data Structures</title>
         <refbody>
           <xsl:apply-templates select="innerclass" mode="summary"/>
