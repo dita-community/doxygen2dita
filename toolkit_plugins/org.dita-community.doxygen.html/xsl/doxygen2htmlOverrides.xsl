@@ -36,6 +36,13 @@
   </xsl:template>
   
   <!-- end Include -->  
+  
+  <!-- Handle nested topics that require special output -->
+  
+  <xsl:template match="*[contains(@class, ' topic/topic ')]['detaileddescription' = tokenize(@outputclass, ' ')]">
+    <a id="details" name="details"/>
+    <xsl:next-match/>
+  </xsl:template>
 
 
   <!-- start Public Member Functions -->
@@ -67,6 +74,7 @@
     
     <xsl:call-template name="detailedDescription"></xsl:call-template>
   </xsl:template>
+  
   <xsl:template name="variablediv">
     <tr class="memitem:a0cbc54a3238dea8110e869897b93a4b9">
       <xsl:choose>

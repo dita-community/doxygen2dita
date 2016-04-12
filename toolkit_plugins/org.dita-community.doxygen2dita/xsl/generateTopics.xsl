@@ -290,7 +290,7 @@
     -->
     <xsl:if
       test="innerclass">
-      <reference id="{local:getId(.)}_data-structures">
+      <reference id="{local:getId(.)}_data-structures" outputclass="{@kind}">
         <title>Data Structures</title>
         <refbody>
           <xsl:apply-templates select="innerclass" mode="summary"/>
@@ -423,7 +423,7 @@
   </xsl:template>
   
   <xsl:template mode="summary" match="sectiondef[@kind = ('public-attrib')]">
-    <reference id="{local:getId(.)}">
+    <reference id="{local:getId(.)}" outputclass="{@kind}">
       <title>Data Fields</title>
       <refbody>
         <xsl:apply-templates select="memberdef[@kind = ('variable')]" mode="summary"/>
@@ -432,8 +432,8 @@
   </xsl:template>
     
   <xsl:template mode="summary" match="sectiondef[@kind = ('public-func')]">
-    <reference id="{local:getId(.)}">
-      <title>Data Fields</title>
+    <reference id="{local:getId(.)}" outputclass="{@kind}">
+      <title>Functions</title>
       <refbody>
         <xsl:apply-templates select="memberdef[@kind = ('function')]" mode="summary"/>
       </refbody>
