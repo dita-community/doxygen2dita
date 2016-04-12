@@ -13,6 +13,16 @@
        Copyright (c) 2015, 2016 DITA Community
        ====================================================================================== -->
   
+  <!-- Generate "more..." link to the main part of the topic's output. -->
+  <xsl:template match="*['compounddef' = tokenize(@outputclass, ' ')]/*[contains(@class, ' topic/shortdesc ')]" 
+    mode="outofline">
+    <p>
+      <xsl:call-template name="commonattributes"/>
+      <xsl:apply-templates/>
+      <a href="#details">More...</a>
+    </p><xsl:text>&#x0a;</xsl:text>
+  </xsl:template>
+  
   <!-- start Include -->
   <xsl:template match="*[contains(@class, ' topic/ph ')][@outputclass = 'includes']">
     <xsl:variable name="keyref" select="xref/@keyref"/>

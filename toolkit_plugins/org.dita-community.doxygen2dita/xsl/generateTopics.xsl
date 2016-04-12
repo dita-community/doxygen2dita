@@ -374,7 +374,7 @@
   <xsl:template match="includes" mode="makeIncludesSection">
     <xsl:choose>
       <xsl:when test="matches(normalize-space(.), '/[\w+].*')">
-        <xsl:message> + [INFO] Ignoring include to absolute path:" <xsl:value-of select="."/>"</xsl:message>
+        <xsl:message> + [INFO] Ignoring include to absolute path or URL:" <xsl:value-of select="."/>"</xsl:message>
       </xsl:when>
       <xsl:otherwise>
         <ph outputclass="{name(.)}">
