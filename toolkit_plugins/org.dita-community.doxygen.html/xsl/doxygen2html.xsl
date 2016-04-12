@@ -55,7 +55,7 @@
       "
     />
     
-    <xsl:if test="true()">
+    <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] gen-user-header: prodname="<xsl:value-of select="$prodname"/>"</xsl:message>      
       <xsl:message> + [DEBUG] gen-user-header: vrm="<xsl:sequence select="$vrm"/>"</xsl:message>      
       <xsl:message> + [DEBUG] gen-user-header: projectnumber="<xsl:value-of select="$projectnumber"/>"</xsl:message>      

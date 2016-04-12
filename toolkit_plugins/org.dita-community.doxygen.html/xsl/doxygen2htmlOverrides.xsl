@@ -14,9 +14,15 @@
        ====================================================================================== -->
   
   <!-- start Include -->
-  <xsl:template match="*[@outputclass = 'includes']">
+  <xsl:template match="*[contains(@class, ' topic/ph ')][@outputclass = 'includes']">
     <xsl:variable name="keyref" select="xref/@keyref"/>
-    <code>#include &lt;<a class="el" href="{$keyref}_source.html"><xsl:value-of select="xref/text()"/></a>&gt;</code>        
+    <code><xsl:apply-templates mode="#current"/></code>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/section ')][@outputclass = 'includes']">
+    <div class="textblock">
+      <xsl:apply-templates mode="#current"/>
+    </div>
   </xsl:template>
   
   <!-- end Include -->  
@@ -108,11 +114,6 @@
   
   <xsl:template match="*[@outputclass = ('collaborationgraph')]" />
 
-
-  <xsl:template match="*[contains(@class, ' topic/section' )][@outputclass = ('includes')]">
-    <xsl:next-match/>
-  </xsl:template>
-  
   <xsl:template
     match="*[contains(@class, ' topic/section' )]
     [tokenize(@outputclass, ' ') = ('declSummary', 'struct')]">

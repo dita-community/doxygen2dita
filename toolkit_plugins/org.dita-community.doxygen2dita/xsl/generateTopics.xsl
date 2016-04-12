@@ -372,15 +372,22 @@
   </xsl:template>
   
   <xsl:template match="includes" mode="makeIncludesSection">
-    <ph outputclass="{name(.)}">
-      <xsl:text>#include </xsl:text>
-      <xsl:apply-templates mode="makeIncludeFileref" select="."/>
-    </ph>
-    <xsl:text>&#x0a;</xsl:text>
+    <xsl:choose>
+      <xsl:when test="matches(normalize-space(.), '/[\w+].*')">
+        <xsl:message> + [INFO] Ignoring include to absolute path:" <xsl:value-of select="."/>"</xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+        <ph outputclass="{name(.)}">
+          <xsl:text>#include </xsl:text>
+          <xsl:apply-templates mode="makeIncludeFileref" select="."/>
+        </ph>
+        <xsl:text>&#x0a;</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="includes">
-    <!-- Suprress includes in default context -->
+    <!-- Suppress includes in default context -->
   </xsl:template>
   
   <xsl:template mode="makeIncludeFileref" match="includes[@local= ('yes')]" priority="10">   
