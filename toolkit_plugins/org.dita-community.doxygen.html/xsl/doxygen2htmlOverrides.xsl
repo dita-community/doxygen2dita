@@ -119,7 +119,6 @@
     match="*[contains(@class, ' topic/section' )]
     [tokenize(@outputclass, ' ') = ('declSummary', 'struct')]">
     <!-- Literal class values are taken from doxygen-generated HTML -->
-    <xsl:message> + [DEBUG] makeDeclSummaryTable: topic/section </xsl:message>
     <tr class="memitem:">
       <td class="memItemLeft">
         <xsl:apply-templates
@@ -130,7 +129,16 @@
       <td class="memItemRight">
         <xsl:apply-templates
           select="*[contains(@class, ' topic/sectiondiv ')]
-          [@outputclass = 'name']"/>
+          [@outputclass = 'name']"/>       
+        <xsl:apply-templates
+          select="*[contains(@class, ' topic/sectiondiv ')]
+          [@outputclass = 'parameters']"/>
+        <xsl:apply-templates
+          select="*[contains(@class, ' topic/sectiondiv ')]
+          [@outputclass = 'initializer']"/>
+        <xsl:apply-templates
+          select="*[contains(@class, ' topic/sectiondiv ')]
+          [@outputclass = 'argsstring']"/>
       </td>
     </tr>
     <xsl:if test="not(matches(normalize-space(sectiondiv[@outputclass = 'briefdescription']), '^\s*$'))">
@@ -144,6 +152,25 @@
         </td>
       </tr>
     </xsl:if>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'parameters']">
+    <xsl:text>(</xsl:text><xsl:apply-templates/><xsl:text>)</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'param']">
+    <xsl:if test="preceding-sibling::*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'param']">
+      <xsl:text>, </xsl:text>
+    </xsl:if>
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'initializer']">
+    <xsl:text>&#xa0;&#xa0;&#xa0;</xsl:text><xsl:apply-templates/>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'argsstring']">
+    <xsl:apply-templates/>
   </xsl:template>
   
   <xsl:template mode="makeDeclSummaryTable" match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'briefdescription']">

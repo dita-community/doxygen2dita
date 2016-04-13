@@ -472,7 +472,7 @@
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="type"><xsl:apply-templates select="type"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
-      <xsl:apply-templates select="argstring"/>
+      <xsl:apply-templates select="argsstring"/>
       <xsl:apply-templates select="definition"/>
       <xsl:apply-templates select="briefdescription" mode="#current"/>
       <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
@@ -548,7 +548,7 @@
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="type"><xsl:apply-templates select="type"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
-      <xsl:apply-templates select="argstring"/>
+      <xsl:apply-templates select="argsstring"/>
       <xsl:if test="param">
         <sectiondiv outputclass="parameters">
           <xsl:apply-templates select="param"/>
@@ -595,12 +595,6 @@
     </ph>
   </xsl:template>
 
-  <xsl:template match="argstring">
-    <sectiondiv outputclass="args">
-      <xsl:apply-templates select="argstring"/>
-    </sectiondiv>
-  </xsl:template>  
-  
   <xsl:template match="compounddef/briefdescription |
                        compounddef/compoundname"
     >
