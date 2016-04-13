@@ -131,19 +131,19 @@
         <xsl:apply-templates
           select="*[contains(@class, ' topic/sectiondiv ')]
           [@outputclass = 'name']"/>
-        <div class="moreinfo">
+      </td>
+    </tr>
+    <xsl:if test="not(matches(normalize-space(sectiondiv[@outputclass = 'briefdescription']), '^\s*$'))">
+      <tr class="memdesc:">
+        <td class="mdescLeft">&#xa0;</td>
+        <td class="mdescRight">
+          <xsl:apply-templates mode="#current"
+            select="*[contains(@class, ' topic/sectiondiv ')]
+            [@outputclass = 'briefdescription']"/>
           <xsl:apply-templates select="*[contains(@class, ' topic/xref ')]"/>
-        </div>
-      </td>
-    </tr>
-    <tr class="memdesc:">
-      <td class="mdescLeft">&#xa0;</td>
-      <td class="mdescRight">
-        <xsl:apply-templates mode="#current"
-          select="*[contains(@class, ' topic/sectiondiv ')]
-          [@outputclass = 'briefdescription']"/>
-      </td>
-    </tr>
+        </td>
+      </tr>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template mode="makeDeclSummaryTable" match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'briefdescription']">
@@ -181,16 +181,15 @@
     match="//section[@outputclass = ('public-attrib')]/sectiondiv[@outputclass = ('memberdecls')]">
     <table class="memberdecls">
       <tbody>
-        <xsl:for-each select="*[@outputclass = ('variable')]">
-          <xsl:call-template name="variablediv"/>
-        </xsl:for-each>
+        <xsl:apply-templates select="*[@outputclass = ('variable')]" mode="variablediv"/>
       </tbody>
     </table>
     
     <xsl:call-template name="detailedDescription"></xsl:call-template>
   </xsl:template>
   
-  <xsl:template name="variablediv">
+  <xsl:template mode="variablediv" match="*[@outputclass = ('variable')]">
+    <xsl:message> + [DEBUG] variablediv: Handling <xsl:value-of select="concat(name(..), '/', name(.))"/></xsl:message>
     <tr class="memitem:a0cbc54a3238dea8110e869897b93a4b9">
       <xsl:choose>
         <xsl:when test="sectiondiv/sectiondiv[@outputclass = 'type']/xref">
@@ -215,12 +214,16 @@
         </a>
       </td>
     </tr>
-    <tr class="memdesc:a0cbc54a3238dea8110e869897b93a4b9">
-      <td class="mdescLeft"/>
-      <td class="mdescRight">
-        <xsl:value-of select="sectiondiv[@outputclass = 'briefdescription']"/>
-      </td>
-    </tr>
+    <xsl:if test="not(matches(normalize-space(sectiondiv[@outputclass = 'briefdescription']), '^\s*$'))">
+      <!-- Don't put out the row if there's no text. -->
+      <tr class="memdesc:a0cbc54a3238dea8110e869897b93a4b9">
+        <td class="mdescLeft">&#xa0;</td>
+        <td class="mdescRight">
+          <xsl:apply-templates  
+            select="sectiondiv[@outputclass = 'briefdescription']"/>
+        </td>
+      </tr>
+    </xsl:if>
     <tr class="separator:a0cbc54a3238dea8110e869897b93a4b9">
       <td class="memSeparator" colspan="2"/>
     </tr>
@@ -248,6 +251,7 @@
   <xsl:template match="*[@outputclass = ('collaborationgraph')]" />
 
   <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'name']">
+    <!-- FIXME: Need to generate link to the corresponding definition of the thing. -->
     <b>
       <xsl:apply-templates/>
     </b>
