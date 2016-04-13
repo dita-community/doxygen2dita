@@ -191,7 +191,7 @@
   
   <xsl:template priority="10"
     match="*[contains(@class, ' topic/section ')]['function' = tokenize(@outputclass, ' ')]/
-    *[contains(@class, ' topic/sectiondiv ')][('argsstring', 'type') = tokenize(@outputclass, ' ')]">
+    *[contains(@class, ' topic/sectiondiv ')][('argsstring', 'kind') = tokenize(@outputclass, ' ')]">
     <!-- Suppress argsstring for functions as the params sectiondiv has the same information
          with hyperlinks.
       -->
