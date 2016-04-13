@@ -423,7 +423,7 @@
   </xsl:template>
   
   <xsl:template mode="summary" match="sectiondef[@kind = ('public-attrib')]">
-    <reference id="{local:getId(.)}" outputclass="{@kind}">
+    <reference id="{local:getId(.)}" outputclass="{@kind} declSummary">
       <title>Data Fields</title>
       <refbody>
         <xsl:apply-templates select="memberdef[@kind = ('variable')]" mode="summary"/>
@@ -432,7 +432,7 @@
   </xsl:template>
     
   <xsl:template mode="summary" match="sectiondef[@kind = ('public-func')]">
-    <reference id="{local:getId(.)}" outputclass="{@kind}">
+    <reference id="{local:getId(.)}" outputclass="{@kind} declSummary">
       <title>Functions</title>
       <refbody>
         <xsl:apply-templates select="memberdef[@kind = ('function')]" mode="summary"/>
@@ -459,7 +459,7 @@
   </xsl:template>
     
   <xsl:template mode="summary" match="sectiondef[@kind = ('typedef')]">
-    <reference id="{local:getId(.)}" outputclass="typedefs"> 
+    <reference id="{local:getId(.)}" outputclass="typedefs declSummary"> 
       <title>Typedefs</title>
       <refbody>
         <xsl:apply-templates select="memberdef[@kind = ('typedef')]" mode="#current"/>
@@ -482,7 +482,7 @@
   </xsl:template>
   
   <xsl:template mode="summary" match="sectiondef[@kind = ('define')]">
-    <reference id="{local:getId(.)}" outputclass="defines"> 
+    <reference id="{local:getId(.)}" outputclass="defines declSummary"> 
       <title>Macros</title>
       <refbody>
         <xsl:apply-templates select="memberdef[@kind = ('define')]" mode="#current"/>
@@ -510,7 +510,7 @@
   </xsl:template>
   
   <xsl:template mode="summary" match="sectiondef[@kind = ('func')]">
-    <reference id="{local:getId(.)}" outputclass="functions">
+    <reference id="{local:getId(.)}" outputclass="functions declSummary">
       <title>Functions</title>
       <refbody>
         <xsl:apply-templates mode="#current" select="memberdef"/>
@@ -563,7 +563,7 @@
   </xsl:template>
 
   <xsl:template match="sectiondef[@kind = 'enum']" mode="summary">
-    <reference id="{local:getId(.)}" outputclass="enumerations"> 
+    <reference id="{local:getId(.)}" outputclass="enumerations declSummary"> 
       <title>Enumerations</title>
       <refbody>
         <xsl:apply-templates select="memberdef[@kind = ('enum')]" mode="#current"/>
