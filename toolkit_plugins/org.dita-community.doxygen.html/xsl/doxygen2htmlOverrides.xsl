@@ -118,12 +118,21 @@
   <xsl:template mode="makeDeclSummaryTable"
     match="*[contains(@class, ' topic/section' )]
     [tokenize(@outputclass, ' ') = ('declSummary', 'struct')]">
+    
+    <!-- This template handles different kinds of things so the apply-templates
+         reflect the union of different detailed elements that can occur
+         in differnt kinds and need to be reflected in the summary table.
+      -->
     <!-- Literal class values are taken from doxygen-generated HTML -->
     <tr class="memitem:">
       <td class="memItemLeft">
         <xsl:apply-templates
           select="*[contains(@class, ' topic/sectiondiv ')]
           [@outputclass = 'kind']"
+        />
+        <xsl:apply-templates
+          select="*[contains(@class, ' topic/sectiondiv ')]
+          [@outputclass = 'type']"
         />
       </td>
       <td class="memItemRight">
@@ -170,6 +179,14 @@
   </xsl:template>
   
   <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'argsstring']">
+    <xsl:apply-templates/>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'type']">
+    <xsl:text>&#x0a;</xsl:text><xsl:apply-templates/>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'kind']">
     <xsl:apply-templates/>
   </xsl:template>
   
