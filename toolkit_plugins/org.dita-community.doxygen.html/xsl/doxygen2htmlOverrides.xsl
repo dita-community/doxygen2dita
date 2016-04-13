@@ -181,9 +181,24 @@
     <xsl:text>&#xa0;&#xa0;&#xa0;</xsl:text><xsl:apply-templates/>
   </xsl:template>
   
+  <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'declname']">
+    <xsl:apply-templates/>
+  </xsl:template>
+  
   <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'argsstring']">
     <xsl:apply-templates/>
   </xsl:template>
+  
+  <xsl:template priority="10"
+    match="*[contains(@class, ' topic/section ')]['function' = tokenize(@outputclass, ' ')]/
+    *[contains(@class, ' topic/sectiondiv ')][('argsstring', 'type') = tokenize(@outputclass, ' ')]">
+    <!-- Suppress argsstring for functions as the params sectiondiv has the same information
+         with hyperlinks.
+      -->
+    
+    <!-- Suppress type for function as it's not used in the output -->
+  </xsl:template>
+  
   
   <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'type']">
     <xsl:text>&#x0a;</xsl:text><xsl:apply-templates/>

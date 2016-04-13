@@ -524,13 +524,15 @@
   
   <xsl:template mode="summary" 
        match="sectiondef[@kind = ('user-defined')][memberdef[@kind = 'function']]">
-    <reference id="{local:getId(.)}">
-      <title><xsl:apply-templates select="header"/></title>
-      <refbody>
-        <xsl:apply-templates select="description"/>
-        <xsl:apply-templates mode="#current" select="memberdef"/>
-      </refbody>
-    </reference>
+    <xsl:if test="not(matches(briefdescription, '^\s*$'))">
+      <reference id="{local:getId(.)}">
+        <title><xsl:apply-templates select="header"/></title>
+        <refbody>
+          <xsl:apply-templates select="description"/>
+          <xsl:apply-templates mode="#current" select="memberdef"/>
+        </refbody>
+      </reference>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template match="description">
@@ -544,22 +546,24 @@
   </xsl:template>
 
   <xsl:template mode="summary" match="memberdef[@kind = ('function')]">
-    <section outputclass="declSummary {@kind}" id="{local:getId(.)}">
-      <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
-      <sectiondiv outputclass="type"><xsl:apply-templates select="type"/></sectiondiv>
-      <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
-      <xsl:apply-templates select="argsstring"/>
-      <xsl:if test="param">
-        <sectiondiv outputclass="parameters">
-          <xsl:apply-templates select="param"/>
-        </sectiondiv>  
-      </xsl:if>
-      <xsl:apply-templates select="definition"/>
-      <xsl:apply-templates select="briefdescription" mode="#current"/>
-      <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
-        <xref keyref="{@id}">More...</xref>
-      </xsl:if>
-    </section>
+    <xsl:if test="not(matches(briefdescription, '^\s*$'))">
+      <section outputclass="declSummary {@kind}" id="{local:getId(.)}">
+        <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
+        <sectiondiv outputclass="type"><xsl:apply-templates select="type"/></sectiondiv>
+        <sectiondiv outputclass="name"><xsl:value-of select="name"/></sectiondiv>
+        <xsl:apply-templates select="argsstring"/>
+        <xsl:if test="param">
+          <sectiondiv outputclass="parameters">
+            <xsl:apply-templates select="param"/>
+          </sectiondiv>  
+        </xsl:if>
+        <xsl:apply-templates select="definition"/>
+        <xsl:apply-templates select="briefdescription" mode="#current"/>
+        <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
+          <xref keyref="{@id}">More...</xref>
+        </xsl:if>
+      </section>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="sectiondef[@kind = 'enum']" mode="summary">
@@ -692,18 +696,20 @@
   </xsl:template>
   
   <xsl:template match="memberdef[@kind = 'function']" priority="10">
-    <sectiondiv outputclass="{@kind}">
-      <sectiondiv outputclass="memberdefinition">
-        <xsl:apply-templates mode="#current" 
-          select="type | name | argsstring | definition"/>
+    <xsl:if test="not(matches(briefdescription, '^\s*$'))">
+      <sectiondiv outputclass="{@kind}">
+        <sectiondiv outputclass="memberdefinition">
+          <xsl:apply-templates mode="#current" 
+            select="type | name | argsstring | definition"/>
+        </sectiondiv>
+        <sectiondiv outputclass="parameters">
+          <xsl:apply-templates select="param"/>
+        </sectiondiv>  
+        <xsl:apply-templates mode="#current"
+           select="* except (type | name | argsstring | definition | param)"
+        />
       </sectiondiv>
-      <sectiondiv outputclass="parameters">
-        <xsl:apply-templates select="param"/>
-      </sectiondiv>  
-      <xsl:apply-templates mode="#current"
-         select="* except (type | name | argsstring | definition | param)"
-      />
-    </sectiondiv>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template match="location">
