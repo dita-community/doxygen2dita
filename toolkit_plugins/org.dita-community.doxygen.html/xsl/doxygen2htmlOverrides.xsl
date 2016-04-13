@@ -148,6 +148,9 @@
         <xsl:apply-templates
           select="*[contains(@class, ' topic/sectiondiv ')]
           [@outputclass = 'argsstring']"/>
+        <xsl:apply-templates
+          select="*[contains(@class, ' topic/sectiondiv ')]
+          [@outputclass = 'enumvalues']"/>
       </td>
     </tr>
     <xsl:if test="not(matches(normalize-space(sectiondiv[@outputclass = 'briefdescription']), '^\s*$'))">
@@ -187,6 +190,37 @@
   </xsl:template>
   
   <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'kind']">
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'enumvalues']">
+    <xsl:text>{</xsl:text><br/>
+    <xsl:text>&#xa0;&#xa0;</xsl:text><!-- Indent the first line by two spaces -->
+    <!-- Avoid literal commas in the source: -->
+    <xsl:apply-templates select="*[contains(@class, ' topic/ph ')][@outputclass = 'enumvalue']"/>
+    <br/><xsl:text>}</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/ph ')][@outputclass = 'enumvalue']">
+    <!-- Pad on left and break every 4th item -->
+    <xsl:apply-templates/>
+    <xsl:if test="following-sibling::*[contains(@class, ' topic/ph ')][@outputclass = 'enumvalue']">
+      <xsl:text>, </xsl:text>
+    </xsl:if>
+    <xsl:if test="following-sibling::*[contains(@class, ' topic/ph ')][@outputclass = 'enumvalue'] and
+      ((count(preceding-sibling::*[contains(@class, ' topic/ph ')][@outputclass = 'enumvalue']) + 1) mod 4) = 0">
+      <br/>
+      <xsl:text>&#xa0;&#xa0;</xsl:text>
+    </xsl:if>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/ph ')][@outputclass = 'enumvalue']/
+                         *[contains(@class, ' topic/ph ')][@outputclass = 'name']">
+    <b><xsl:apply-templates/></b>
+  </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/ph ')][@outputclass = 'enumvalue']/
+    *[contains(@class, ' topic/ph ')][@outputclass = 'initializer']">
     <xsl:apply-templates/>
   </xsl:template>
   
