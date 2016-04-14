@@ -263,4 +263,20 @@
     <xsl:sequence select="if ($result) then $result else 'unknown'"/>
   </xsl:function>
   
+  <!-- Return true if the enumeration has content that requires
+       a full topic.
+    -->
+  <xsl:function name="local:isEnumWithDetails" as="xs:boolean">
+    <xsl:param name="context" as="element()"/>
+    <xsl:variable name="result" as="xs:boolean"
+      select="if ($context/@kind != 'enum') 
+                 then false()
+                 else
+                    not(matches($context/detaileddescription, '^\s*$')) or
+                    (not(matches($context/briefdescription, '^\s*$')) and 
+                     $context/enumvalue[not(matches(briefdescription, '^\s*$'))])"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:function>
+  
 </xsl:stylesheet>

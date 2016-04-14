@@ -190,9 +190,7 @@
       select="not(matches(normalize-space(detaileddescription), '^\s*$'))"
     />
     <xsl:variable name="isEnumWithDetails" as="xs:boolean"
-      select="not(matches(detaileddescription, '^\s*$')) or
-              (not(matches(briefdescription, '^\s*$')) and 
-              enumvalue[not(matches(briefdescription, '^\s*$'))])"
+      select="local:isEnumWithDetails(.)"
     />
     <!-- Only elements that have detailed descriptions will become topics.
       -->

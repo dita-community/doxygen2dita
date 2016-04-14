@@ -759,7 +759,9 @@
               (($target/@kind = ('typedef', 'enum', 'define', 'function', 'variable')) or
                ($target/self::enumvalue)
               ) and 
-              matches($target/detaileddescription, '^\s*$')"
+              matches($target/detaileddescription, '^\s*$')
+              and not(local:isEnumWithDetails($target))
+              "
     />
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] ref: isLocalRef="<xsl:value-of select="$isLocalRef"/>"</xsl:message>
@@ -1175,13 +1177,8 @@ NOTE: The result-document logic is
   
   <xsl:template mode="fullTopics" match="memberdef[@kind = ('enum')]" priority="10">
     <xsl:choose>
-      <xsl:when test="not(matches(detaileddescription, '^\s*$'))">
+      <xsl:when test="local:isEnumWithDetails(.)">
         <xsl:call-template name="makeFullTopicForMemberdef"/>        
-      </xsl:when>
-      <xsl:when test="not(matches(briefdescription, '^\s*$'))
-        and enumvalue[not(matches(briefdescription, '^\s*$'))]"
-        >
-        <xsl:call-template name="makeFullTopicForMemberdef"/>
       </xsl:when>
       <xsl:otherwise>
         <!-- No topic for you -->
