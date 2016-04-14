@@ -583,7 +583,10 @@
         <xsl:apply-templates select="enumvalue"/>
       </sectiondiv>
       <xsl:apply-templates select="briefdescription" mode="#current"/>
-      <xsl:if test="not(matches(detaileddescription, '^\s*$'))">
+      <xsl:if test="not(matches(detaileddescription, '^\s*$')) or
+        (not(matches(briefdescription, '^\s*$')) and 
+         enumvalue[not(matches(briefdescription, '^\s*$'))])
+        ">
         <xref keyref="{@id}">More...</xref>
       </xsl:if>
     </section>
@@ -721,10 +724,10 @@
     <xsl:param name="sourceDocs" as="document-node()*" tunnel="yes"/>
     <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
     
-    <xsl:variable name="doDebug" as="xs:boolean"
+<!--    <xsl:variable name="doDebug" as="xs:boolean"
       select="string(@refid) = ('_o_v_r___c_a_p_i_8h_1a026a4136bb5a5b86f0e51c8bff4db490')"
     />
-    
+-->    
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] ref: refid="<xsl:value-of select="@refid"/>"</xsl:message>
     </xsl:if>
@@ -1054,9 +1057,9 @@
     </xsl:if>
     <reference id="{@kind}">
       <title><xsl:value-of select="local:getLabelForKind(@kind, false())"/> Documentation</title>
-      <xsl:apply-templates mode="fullTopics" 
-        select="../sectiondef/memberdef[@kind = $memberType and 
-                                        not(matches(detaileddescription, '^\s*$'))]"/>
+      <xsl:apply-templates mode="fullTopics"
+        select="../sectiondef/memberdef[@kind = $memberType]"
+      />
     </reference>
   </xsl:template>
 
@@ -1163,10 +1166,32 @@ NOTE: The result-document logic is
     </reference>
   </xsl:template>
   
-  <xsl:template mode="fullTopics" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef', 'variable')]">
-    <xsl:if test="@kind = ('variable')">
-      <xsl:message> + [DEBUG] fullTopics: memberDef, @kind="variable"</xsl:message>
-    </xsl:if>
+  <!-- For most memberdefs, if there's no detailed description, don't
+       generated a topic. 
+    -->
+  <xsl:template mode="fullTopics" match="memberdef[matches(detaileddescription, '^\s*$')]" priority="5">
+    <!-- No topic for you. -->
+  </xsl:template>
+  
+  <xsl:template mode="fullTopics" match="memberdef[@kind = ('enum')]" priority="10">
+    <xsl:choose>
+      <xsl:when test="not(matches(detaileddescription, '^\s*$'))">
+        <xsl:call-template name="makeFullTopicForMemberdef"/>        
+      </xsl:when>
+      <xsl:when test="not(matches(briefdescription, '^\s*$'))
+        and enumvalue[not(matches(briefdescription, '^\s*$'))]"
+        >
+        <xsl:call-template name="makeFullTopicForMemberdef"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- No topic for you -->
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template name="makeFullTopicForMemberdef" 
+    mode="fullTopics" match="memberdef[@kind = ('function', 'define', 'enum', 'typedef', 'variable')]">
+    
     <reference id="{local:getId(.)}" outputclass="{@kind}">
       <xsl:apply-templates select="." mode="makeMemberdefDocTitle"/>
       <refbody>

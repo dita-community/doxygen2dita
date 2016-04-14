@@ -152,8 +152,9 @@
     match="sectiondef[@kind = ('user-defined')][memberdef[@kind = 'enum']]"
     >
     <!-- This sectiondef doesn't generate a topic as all the enum definitions
-         collected under a generated topic with the ID "enum".
+         collected under a generated topic with the ID "enum".         
       -->
+    <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" 
@@ -188,10 +189,15 @@
     <xsl:variable name="hasDetailedDesc" as="xs:boolean"
       select="not(matches(normalize-space(detaileddescription), '^\s*$'))"
     />
+    <xsl:variable name="isEnumWithDetails" as="xs:boolean"
+      select="not(matches(detaileddescription, '^\s*$')) or
+              (not(matches(briefdescription, '^\s*$')) and 
+              enumvalue[not(matches(briefdescription, '^\s*$'))])"
+    />
     <!-- Only elements that have detailed descriptions will become topics.
       -->
     <xsl:choose>
-      <xsl:when test="$hasDetailedDesc">
+      <xsl:when test="$hasDetailedDesc or $isEnumWithDetails">
         <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}" outputclass="{name(.)} {@kind}"/>
       </xsl:when>
       <xsl:otherwise>
