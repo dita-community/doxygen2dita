@@ -34,6 +34,11 @@
     <xsl:sequence select="$result"/>
   </xsl:function>
   
+  <!-- =======================================
+       local:getKey()
+       ======================================= -->
+  
+  
   <!-- Construct the DITA key to use for a given
        element.
        
@@ -42,7 +47,7 @@
     -->
   <xsl:function name="local:getKey" as="xs:string">
     <xsl:param name="context" as="element()"/>
-    <xsl:sequence select="local:getKey($context, 'summary')"/>
+    <xsl:sequence select="local:getKey($context, 'default')"/>
   </xsl:function>
   
   <!-- Construct the DITA key to use for a given
@@ -80,7 +85,66 @@
     <xsl:sequence select="$result"/>
   </xsl:function>
   
+  <xsl:template mode="local:getKey" match="compound">
+    <xsl:param name="outputContext" tunnel="yes" as="xs:string"/>
+    <xsl:param name="doDebug" tunnel="yes" as="xs:boolean"/>
+
+    <xsl:variable name="result" as="xs:string"
+      select="translate(@refid, '/', '_')"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
   
+  <xsl:template mode="local:getKey" match="compounddef">
+    <xsl:param name="outputContext" tunnel="yes" as="xs:string"/>
+    <xsl:param name="doDebug" tunnel="yes" as="xs:boolean"/>
+    
+    <xsl:variable name="result" as="xs:string"
+      select="translate(@id, '/', '_')"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getKey" match="memberdef">
+    <xsl:param name="outputContext" tunnel="yes" as="xs:string"/>
+    <xsl:param name="doDebug" tunnel="yes" as="xs:boolean"/>
+    
+    <xsl:variable name="result" as="xs:string"
+      select="local:getId(., $outputContext, $doDebug)"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getKey" match="programlisting">
+    <xsl:param name="outputContext" tunnel="yes" as="xs:string"/>
+    <xsl:param name="doDebug" tunnel="yes" as="xs:boolean"/>
+    
+    <xsl:variable name="result" as="xs:string"
+      select="concat(local:getKey(.., $outputContext, $doDebug), '_', 'source')"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getKey" match="ref | includes">
+    <xsl:param name="outputContext" tunnel="yes" as="xs:string"/>
+    <xsl:param name="doDebug" tunnel="yes" as="xs:boolean"/>
+    
+    <xsl:variable name="result" as="xs:string"
+      select="translate(@refid, '/', '_')"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getKey" match="*" priority="-1">
+    <xsl:param name="outputContext" tunnel="yes" as="xs:string"/>
+    <xsl:param name="doDebug" tunnel="yes" as="xs:boolean"/>
+    
+    <xsl:variable name="result" as="xs:string"
+      select="generate-id(.)"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:template>
+    
   <!-- =======================================
        local:getId()
        ======================================= -->
@@ -149,48 +213,6 @@
         <xsl:next-match/>
       </xsl:otherwise>
     </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template mode="local:getKey" match="compound">
-    <xsl:variable name="result" as="xs:string"
-      select="translate(@refid, '/', '_')"
-    />
-    <xsl:sequence select="$result"/>
-  </xsl:template>
-  
-  <xsl:template mode="local:getKey" match="compounddef">
-    <xsl:variable name="result" as="xs:string"
-      select="translate(@id, '/', '_')"
-    />
-    <xsl:sequence select="$result"/>
-  </xsl:template>
-  
-  <xsl:template mode="local:getKey" match="memberdef">
-    <xsl:variable name="result" as="xs:string"
-      select="local:getId(.)"
-    />
-    <xsl:sequence select="$result"/>
-  </xsl:template>
-  
-  <xsl:template mode="local:getKey" match="programlisting">
-    <xsl:variable name="result" as="xs:string"
-      select="concat(local:getKey(..), '_', 'source')"
-    />
-    <xsl:sequence select="$result"/>
-  </xsl:template>
-  
-  <xsl:template mode="local:getKey" match="ref | includes">
-    <xsl:variable name="result" as="xs:string"
-      select="translate(@refid, '/', '_')"
-    />
-    <xsl:sequence select="$result"/>
-  </xsl:template>
-  
-  <xsl:template mode="local:getKey" match="*" priority="-1">
-    <xsl:variable name="result" as="xs:string"
-      select="generate-id(.)"
-    />
-    <xsl:sequence select="$result"/>
   </xsl:template>
   
   <xsl:function name="local:getLabelForKind" as="xs:string">
