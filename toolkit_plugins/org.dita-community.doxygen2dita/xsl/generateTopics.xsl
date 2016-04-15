@@ -768,7 +768,7 @@
     <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <xsl:variable name="doDebug" as="xs:boolean"
-      select="string(@refid) = ('structovr_tracking_state_1a9cc3ca3fc91d58498f1fff6866e4880b')"
+      select="string(@refid) = ('xxxx')"
     />
     
     <xsl:if test="$doDebug">
@@ -842,6 +842,14 @@
   </xsl:template>
   
   <xsl:template mode="getTopicMakingParent" match="memberdef" as="element()">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] getTopicMakingParent: memberdef, kind="<xsl:value-of select="@kind"/>"</xsl:message>
+      <xsl:message> + [DEBUG] getTopicMakingParent:   name="<xsl:value-of select="name"/>"</xsl:message>
+    </xsl:if>
+    
+    
     <xsl:sequence 
       select="if (matches(detaileddescription, '^\s*$'))
                  then ..
@@ -850,9 +858,16 @@
     />
   </xsl:template>
   
-  <xsl:template mode="getTopicMakingParent" match="memberdef[kind = ('variable')]" as="element()" priority="10">
+  <xsl:template mode="getTopicMakingParent" match="memberdef[@kind = ('variable')]" as="element()" priority="10">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] getTopicMakingParent: variable memberdef</xsl:message>
+      <xsl:message> + [DEBUG] getTopicMakingParent:   name="<xsl:value-of select="name"/>"</xsl:message>
+    </xsl:if>
     <!-- Variables are within the topic defined by the containing compounddef for their associated function -->
-    <xsl:sequence select="ancestor::*[compounddef]"></xsl:sequence>
+    
+    <xsl:sequence select="ancestor::compounddef"/>
   </xsl:template>
   
   <xsl:template mode="getTopicMakingParent" match="*" priority="-1" as="element()">
