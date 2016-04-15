@@ -458,10 +458,6 @@
   <xsl:template match="sectiondef[@kind = ('user-defined')]" mode="functionSummary">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
-    <xsl:if test="$doDebug">
-      <xsl:message> + [DEBUG] functionSummary: sectiondef, kind='user-defined'.</xsl:message>
-    </xsl:if>
-    
     <!-- NOTE: This depends on a given user-defined sectiondef only having one kind
          of thing in it or only being used to generate a single topic, otherwise
          we have to introduce additional output contexts to distinguish the topicdo ID.
@@ -772,7 +768,7 @@
     <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <xsl:variable name="doDebug" as="xs:boolean"
-      select="string(@refid) = ('_o_v_r___c_a_p_i_8h_1a25770a7bf9960edb82a9cfb034f907d0a1c5764665efe7992a22b5a9f131e3edf')"
+      select="string(@refid) = ('structovr_tracking_state_1a9cc3ca3fc91d58498f1fff6866e4880b')"
     />
     
     <xsl:if test="$doDebug">
@@ -806,7 +802,8 @@
               ((($target/@kind = ('typedef', 'enum', 'define', 'function', 'variable'))) and 
                 matches($target/detaileddescription, '^\s*$') and
                not(local:isEnumWithDetails($target))) or
-              ($target/self::enumvalue)
+              ($target/self::enumvalue) or
+              ($target/self::memberdef[@kind = ('variable')])
               "
     />
     <xsl:if test="$doDebug">
@@ -851,6 +848,11 @@
                  else .
       "
     />
+  </xsl:template>
+  
+  <xsl:template mode="getTopicMakingParent" match="memberdef[kind = ('variable')]" as="element()" priority="10">
+    <!-- Variables are within the topic defined by the containing compounddef for their associated function -->
+    <xsl:sequence select="ancestor::*[compounddef]"></xsl:sequence>
   </xsl:template>
   
   <xsl:template mode="getTopicMakingParent" match="*" priority="-1" as="element()">
@@ -908,11 +910,7 @@
            detaileddescription | 
            inbodydescription">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    
-    <xsl:if test="$doDebug">
-      <xsl:message> + [DEBUG] <xsl:value-of select="name(.)"/>: normalize-space(.) != '' = <xsl:value-of select="normalize-space(.) != ''"/>"</xsl:message>
-    </xsl:if>
-    
+        
     <xsl:choose>
       <xsl:when test="normalize-space(.) != ''">
         <sectiondiv outputclass="{name(.)}">
@@ -1429,6 +1427,14 @@ NOTE: The result-document logic is
     <codeph outputclass="{name(.)}"><xsl:apply-templates select="@*" mode="data"/><xsl:apply-templates/></codeph>
   </xsl:template>
   
+  <xsl:template mode="data" match="@*" priority="-1">
+    <data name="{name(.)}" value="{.}"/>
+  </xsl:template>
+  
+  <xsl:template mode="data" match="@refid | @refkind" >
+    <!-- Not useful in the output -->
+  </xsl:template>
+  
   <xsl:template match="codeline/highlight[string(.) = '']" priority="10">    
     <!-- Don't generate for empty elements as they can have no effect -->
   </xsl:template>
@@ -1439,10 +1445,6 @@ NOTE: The result-document logic is
   
   <xsl:template match="sp">
     <ph outputclass="{name(.)}">&#x20;</ph>
-  </xsl:template>
-  
-  <xsl:template match="@lineno">
-    <data name="{name(.)}" value="{.}"/>
   </xsl:template>
   
   <xsl:template mode="fullTopics" match="*" priority="-1">
