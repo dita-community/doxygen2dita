@@ -1398,7 +1398,7 @@ NOTE: The result-document logic is
     </xsl:if>
     <!-- Don't create a row if there's no brief description -->
     <xsl:if test="not(matches(briefdescription, '^\s*$'))">
-      <row>
+      <row id="{@id}">
         <entry>
           <xsl:apply-templates select="name" mode="makeMemberdefDocTitle"/>
         </entry>
