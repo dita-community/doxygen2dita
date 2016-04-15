@@ -388,4 +388,20 @@
     <xsl:sequence select="$result"/>
   </xsl:function>
   
+  <!-- Returns true if the source doc has no text other than whitespace. -->
+  <xsl:function name="local:isEmptyDoc" as="xs:boolean">
+    <xsl:param name="sourceDoc" as="document-node()"/>
+    
+    <xsl:variable name="sourceDocBodyText"
+      
+      >
+      <xsl:apply-templates mode="getBodyText" select="$sourceDoc/*"/>
+    </xsl:variable>
+    
+    <xsl:variable name="result" 
+      select="matches($sourceDocBodyText, '^\s*$')"
+    />   
+    <xsl:sequence select="$result"/>
+    
+  </xsl:function>
 </xsl:stylesheet>

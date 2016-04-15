@@ -95,16 +95,31 @@
     <xsl:variable name="sourceDoc" as="document-node()?"
       select="document($sourceURI, .)"
     />
-    <xsl:variable name="sourceDocBodyText"
-
-    >
-      <xsl:apply-templates mode="getBodyText" select="$sourceDoc/*">
-        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-      </xsl:apply-templates>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] generateTopicrefs: compound (<xsl:value-of select="@kind"/>): sourceURI="<xsl:value-of select="$sourceURI"/>"</xsl:message>
+      <xsl:message> + [DEBUG] generateTopicrefs: compound: isEmptyDoc()=<xsl:value-of select="local:isEmptyDoc($sourceDoc)"/>"</xsl:message>
+    </xsl:if>
+    
+    <xsl:variable name="skipEmptyDirFile" as="xs:boolean">
+      <xsl:choose>
+        <xsl:when test="@kind = ('dir')">
+          <xsl:variable name="files" as="node()*">
+            <xsl:apply-templates select="$sourceDoc/*/compounddef/innerfile">
+              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+            </xsl:apply-templates>
+          </xsl:variable>
+          <xsl:sequence select="not($files)"/>          
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:sequence select="false()"/>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:variable>
+    
     <xsl:choose>
-      <xsl:when test="$sourceDocBodyText = ''">
-        <xsl:message> + [INFO] Source document <xsl:value-of select="$sourceURI"/> has no content, skipping.</xsl:message>
+      <xsl:when test="local:isEmptyDoc($sourceDoc) or $skipEmptyDirFile">
+        <xsl:message> + [INFO] generateTopicrefs: Source document <xsl:value-of select="$sourceURI"/> has no content, skipping.</xsl:message>
       </xsl:when>
       <xsl:otherwise>
         <topicref keys="{$keyName}"  outputclass="{name(.)} {@kind}"
@@ -174,9 +189,17 @@
     
     <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
     
-    <xsl:apply-templates mode="#current">
-      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-    </xsl:apply-templates>
+    <xsl:choose>
+      <xsl:when test="local:isEmptyDoc(root(.))">
+        <xsl:message> + [INFO] generateAncilaryTopicrefs: Ignoring empty document "<xsl:value-of select="compoundname"/>"</xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates mode="#current">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+      </xsl:otherwise>
+    </xsl:choose>
+    
   </xsl:template>
 
   <xsl:template mode="generateAncilaryTopicrefs" match="programlisting">
@@ -188,12 +211,19 @@
     <xsl:variable name="resultURI" as="xs:string"
       select="relpath:newFile($outdir, $topicURI)"
     />
-    <xsl:result-document href="{$resultURI}" format="topic">
-      <xsl:apply-templates select="." mode="fullTopics">
-        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-      </xsl:apply-templates>
-    </xsl:result-document>
-    <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"  outputclass="{name(.)} {@kind}"/>
+    <xsl:choose>
+      <xsl:when test="local:isEmptyDoc(root(.))">
+        <xsl:message> + [INFO] generateAncilaryTopicrefs (programlisting): Doc is empty, not generating a program listing or topic reference.</xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:result-document href="{$resultURI}" format="topic">
+          <xsl:apply-templates select="." mode="fullTopics">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>
+        </xsl:result-document>
+        <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"  outputclass="{name(.)} {@kind}"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="sectiondef">

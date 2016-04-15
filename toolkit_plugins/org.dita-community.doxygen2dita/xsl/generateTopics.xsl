@@ -47,15 +47,10 @@
     <xsl:variable name="sourceDoc" as="document-node()?"
       select="document($sourceURI, .)"
     />
-    <xsl:variable name="sourceDocBodyText"
-
-    >
-      <xsl:apply-templates mode="getBodyText" select="$sourceDoc/*"/>
-    </xsl:variable>
     
     <xsl:choose>
-      <xsl:when test="matches($sourceDocBodyText, '^\s*$')">
-        <xsl:message> + [INFO] Source doc "<xsl:value-of select="$sourceURI"/>" has no text, skipping.</xsl:message>
+      <xsl:when test="local:isEmptyDoc($sourceDoc)">
+        <xsl:message> + [INFO] generateTopics (compounddef): Source doc "<xsl:value-of select="$sourceURI"/>" has no text, skipping.</xsl:message>
       </xsl:when>
       <xsl:when test="@kind = ('page')">
         <xsl:result-document href="{$resultURI}" format="topic">
@@ -113,42 +108,83 @@
   </xsl:template>
   
   <xsl:template match="compounddef[@kind = ('dir')]" priority="10">
-    <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
-      <title>File List</title>
-      <xsl:apply-templates mode="shortDesc" select="."/>
-      <prolog>
-        <xsl:apply-templates mode="topicMetadata"/>
-      </prolog>
-      <refbody>
-        <section outputclass="dir">
-          <dl outputclass="directory">
-            <dlentry outputclass="dir">
-              <dt><xsl:value-of select="compoundname"/></dt>
-              <dd>
-                <dl outputclass="filelist">
-                  <xsl:apply-templates select="innerfile"></xsl:apply-templates>
-                </dl>
-              </dd>
-            </dlentry>
-          </dl>
-        </section>
-      </refbody>
-    </reference>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] dir: <xsl:value-of select="compoundname"/></xsl:message>
+    </xsl:if>
+    
+    <xsl:variable name="files" as="node()*">
+      <xsl:apply-templates select="innerfile">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] dir: files=<xsl:sequence select="$files"/></xsl:message>
+    </xsl:if>
+    
+    <xsl:choose>
+      <xsl:when test="not($files)">
+        <xsl:message> + [INFO] compounddef, kind="dir": No files used from directory "<xsl:value-of select="compoundname"/>".</xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+        <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
+          <title>File List</title>
+          <xsl:apply-templates mode="shortDesc" select="."/>
+          <prolog>
+            <xsl:apply-templates mode="topicMetadata"/>
+          </prolog>
+          <refbody>
+            <section outputclass="dir">
+              <dl outputclass="directory">
+                <dlentry outputclass="dir">
+                  <dt><xsl:value-of select="compoundname"/></dt>
+                  <dd>
+                    <dl outputclass="filelist">
+                      <xsl:sequence select="$files"/>
+                    </dl>
+                  </dd>
+                </dlentry>
+              </dl>
+            </section>
+          </refbody>
+        </reference>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="innerfile">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] innerfile: </xsl:message>
+    </xsl:if>
     <xsl:variable name="sourceURI" as="xs:string"
          select="concat(@refid, '.xml')"
     />
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] innerfile: sourceURI="<xsl:value-of select="$sourceURI"/>"</xsl:message>
+    </xsl:if>
+    
     <xsl:variable name="sourceDoc" as="document-node()?"
       select="document($sourceURI, .)"
     />
-    <dlentry outputclass="file">
-      <dt outputclass="filename"><xref keyref="{local:getKey($sourceDoc/*/compounddef)}"><xsl:value-of select="normalize-space(.)"/></xref></dt>
-      <dd outputclass="shortdesc">
-        <xsl:apply-templates select="$sourceDoc/*/compounddef/briefdescription/node()"/>
-      </dd>
-    </dlentry>
+    
+    <xsl:choose>
+      <xsl:when test="local:isEmptyDoc($sourceDoc)">
+        <xsl:message> + [INFO] innerfile: Ignoring empty file "<xsl:value-of select="$sourceURI"/>"</xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+        <dlentry outputclass="file">
+          <dt outputclass="filename"><xref keyref="{local:getKey($sourceDoc/*/compounddef)}"><xsl:value-of select="normalize-space(.)"/></xref></dt>
+          <dd outputclass="shortdesc">
+            <xsl:apply-templates select="$sourceDoc/*/compounddef/briefdescription/node()"/>
+          </dd>
+        </dlentry>
+      </xsl:otherwise>
+    </xsl:choose>
+     
   </xsl:template>
   
   <xsl:template match="compounddef[@kind = ('union')]" priority="10">
@@ -185,29 +221,36 @@
   </xsl:template>
   
   <xsl:template match="compounddef[@kind = ('file')]" priority="10">
-    <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
-      <xsl:apply-templates mode="topicTitle" select="."/>
-      <xsl:apply-templates mode="shortDesc" select="."/>
-      <prolog>
-        <xsl:apply-templates mode="topicMetadata"/>
-      </prolog>
-      <refbody>
-        <xsl:call-template name="makeIncludesSection"/>
-        <xsl:apply-templates select="programlisting" mode="makeExternalPageLink"/>
-      </refbody>
-      <!-- Summary topics: -->
-      <xsl:call-template name="makeDataStructuresTopic"/>
-      <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('define')]"/>
-      <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('typedef')]"/>
-      <xsl:apply-templates mode="summary" select="sectiondef[@kind = 'enum']"/>
-      <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('func')]"/>
-      <!-- Detailed description of the file itself: -->
-      <xsl:apply-templates select="detaileddescription" mode="makeTopic"/>
-      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('define')]"/>
-      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('typedef')]"/>
-      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[memberdef[@kind = ('enum')]]"/>
-      <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('func')]"/>
-    </reference>
+    <xsl:choose>
+      <xsl:when test="local:isEmptyDoc(root(.))">
+        <xsl:message> + [INFO] compounddef, kind="file": Skipping empty file.</xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+        <reference id="{local:getId(.)}" outputclass="{name(.)} {@kind}">
+          <xsl:apply-templates mode="topicTitle" select="."/>
+          <xsl:apply-templates mode="shortDesc" select="."/>
+          <prolog>
+            <xsl:apply-templates mode="topicMetadata"/>
+          </prolog>
+          <refbody>
+            <xsl:call-template name="makeIncludesSection"/>
+            <xsl:apply-templates select="programlisting" mode="makeExternalPageLink"/>
+          </refbody>
+          <!-- Summary topics: -->
+          <xsl:call-template name="makeDataStructuresTopic"/>
+          <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('define')]"/>
+          <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('typedef')]"/>
+          <xsl:apply-templates mode="summary" select="sectiondef[@kind = 'enum']"/>
+          <xsl:apply-templates mode="summary" select="sectiondef[@kind = ('func')]"/>
+          <!-- Detailed description of the file itself: -->
+          <xsl:apply-templates select="detaileddescription" mode="makeTopic"/>
+          <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('define')]"/>
+          <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('typedef')]"/>
+          <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[memberdef[@kind = ('enum')]]"/>
+          <xsl:apply-templates mode="detailedDescriptionSubtopics" select="sectiondef[@kind = ('func')]"/>
+        </reference>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template mode="makeTopic" match="compounddef[@kind = ('struct')]/detaileddescription">
