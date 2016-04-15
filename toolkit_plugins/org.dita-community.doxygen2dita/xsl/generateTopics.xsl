@@ -771,10 +771,10 @@
     <xsl:param name="sourceDocs" as="document-node()*" tunnel="yes"/>
     <xsl:param name="wrapXref" as="xs:boolean" tunnel="yes" select="false()"/>
     
-<!--    <xsl:variable name="doDebug" as="xs:boolean"
-      select="string(@refid) = ('_o_v_r___c_a_p_i_8h_1a026a4136bb5a5b86f0e51c8bff4db490')"
+    <xsl:variable name="doDebug" as="xs:boolean"
+      select="string(@refid) = ('_o_v_r___c_a_p_i_8h_1a25770a7bf9960edb82a9cfb034f907d0a1c5764665efe7992a22b5a9f131e3edf')"
     />
--->    
+    
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] ref: refid="<xsl:value-of select="@refid"/>"</xsl:message>
     </xsl:if>
@@ -794,7 +794,7 @@
     <!-- Get the first target in case there are multiples (which should never happen): -->
     <xsl:variable name="target" as="element()?" select="$targets[1]"/>
     <xsl:if test="$doDebug">
-      <xsl:message> + [DEBUG] ref: target: <xsl:value-of select="$target/@kind"/> (<xsl:value-of select="$target/name"/>)</xsl:message>
+      <xsl:message> + [DEBUG] ref: target: <xsl:value-of select="name($target)"/>: <xsl:value-of select="$target/@kind"/> (<xsl:value-of select="$target/name"/>)</xsl:message>
       <xsl:message> + [DEBUG] ref: containing doc: <xsl:value-of select="document-uri(root($target))"/></xsl:message>
     </xsl:if>
     <!-- Determine if the target is an element that will not generate
@@ -803,11 +803,10 @@
       -->
     <xsl:variable name="isLocalRef" as="xs:boolean"
       select="boolean($target) and 
-              (($target/@kind = ('typedef', 'enum', 'define', 'function', 'variable')) or
-               ($target/self::enumvalue)
-              ) and 
-              matches($target/detaileddescription, '^\s*$')
-              and not(local:isEnumWithDetails($target))
+              ((($target/@kind = ('typedef', 'enum', 'define', 'function', 'variable'))) and 
+                matches($target/detaileddescription, '^\s*$') and
+               not(local:isEnumWithDetails($target))) or
+              ($target/self::enumvalue)
               "
     />
     <xsl:if test="$doDebug">
