@@ -432,12 +432,49 @@
   </xsl:template>
     
   <xsl:template mode="summary" match="sectiondef[@kind = ('public-func')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+        
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] summary: sectiondef, kind='public-func'.</xsl:message>
+    </xsl:if>
+    
     <reference id="{local:getId(.)}" outputclass="{@kind} declSummary">
       <title>Functions</title>
       <refbody>
-        <xsl:apply-templates select="memberdef[@kind = ('function')]" mode="summary"/>
+        <xsl:apply-templates 
+          select="memberdef[@kind = ('function')]" 
+                  mode="summary">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+      </refbody>
+      <!-- Now collect any functions defined in user-defined sections: -->
+      <xsl:apply-templates mode="functionSummary"
+        select="../sectiondef[@kind = ('user-defined')][memberdef[@kind = ('function')]]">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>  
+    </reference>
+  </xsl:template>
+  
+  <xsl:template match="sectiondef[@kind = ('user-defined')]" mode="functionSummary">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] functionSummary: sectiondef, kind='user-defined'.</xsl:message>
+    </xsl:if>
+    
+    <!-- NOTE: This depends on a given user-defined sectiondef only having one kind
+         of thing in it or only being used to generate a single topic, otherwise
+         we have to introduce additional output contexts to distinguish the topicdo ID.
+      -->
+    <reference id="{local:getId(.)}" outputclass="functions declSummary"> 
+      <title><xsl:apply-templates select="header"/></title>
+      <refbody>
+        <xsl:apply-templates select="memberdef[@kind = ('function')]" mode="summary">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
       </refbody>
     </reference>
+    
   </xsl:template>
     
   <xsl:template mode="summary" match="memberdef[@kind = ('variable')]">
@@ -510,15 +547,25 @@
   </xsl:template>
   
   <xsl:template mode="summary" match="sectiondef[@kind = ('func')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    
     <reference id="{local:getId(.)}" outputclass="functions declSummary">
       <title>Functions</title>
       <refbody>
-        <xsl:apply-templates mode="#current" select="memberdef"/>
+        <xsl:apply-templates mode="#current" select="memberdef">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
       </refbody>
+
+      <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
+
       <xsl:apply-templates 
         select="../sectiondef[@kind = ('user-defined')][memberdef[@kind = 'function']]"
-        mode="#current"
-      />
+        mode="functionSummary"
+      >
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
     </reference>
   </xsl:template>
   

@@ -228,7 +228,7 @@
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" 
-      match="sectiondef[@kind = ('define', 'typedef', 'public-attrib', 'user-defined')]"
+      match="sectiondef[@kind = ('define', 'typedef', 'public-attrib', 'user-defined', 'enum')]"
     >
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
@@ -239,6 +239,7 @@
     />
 
     <topicref  toc="no" keys="{local:getKey(.)}" href="{$topicURI}" outputclass="{name(.)} {@kind}">
+      <xsl:comment><xsl:value-of select="header"/></xsl:comment>
       <xsl:apply-templates mode="#current">
         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
       </xsl:apply-templates>
