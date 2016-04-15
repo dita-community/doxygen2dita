@@ -171,7 +171,7 @@
     </topicref>
     
   </xsl:template>
-  
+
   <xsl:template mode="generateAncilaryTopicrefs" match="text()"/>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="memberdef[@kind = ('define', 'enum', 'typedef', 'function')]">

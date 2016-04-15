@@ -42,26 +42,80 @@
     -->
   <xsl:function name="local:getKey" as="xs:string">
     <xsl:param name="context" as="element()"/>
+    <xsl:sequence select="local:getKey($context, 'summary')"/>
+  </xsl:function>
+  
+  <!-- Construct the DITA key to use for a given
+       element.
+       
+       @param context Element to get the key name for
+       @param outputContext The output context the key needs to reflect.
+       @return The key name
+    -->
+  <xsl:function name="local:getKey" as="xs:string">
+    <xsl:param name="context" as="element()"/>
+    <xsl:param name="outputContext" as="xs:string"/>    
+    <xsl:sequence select="local:getKey($context, $outputContext, false())"/>
+  </xsl:function>
+  
+  <!-- Construct the DITA key to use for a given
+       element.
+       
+       @param context Element to get the key name for
+       @param outputContext The output context the key needs to reflect.
+       @return The key name
+    -->
+  <xsl:function name="local:getKey" as="xs:string">
+    <xsl:param name="context" as="element()"/>
+    <xsl:param name="outputContext" as="xs:string"/>
+    <xsl:param name="doDebug" as="xs:boolean"/>
     
     <xsl:variable name="result" as="xs:string">
-      <xsl:apply-templates select="$context" mode="local:getKey"/>
+      <xsl:apply-templates select="$context" mode="local:getKey">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        <xsl:with-param name="outputContext" as="xs:string" tunnel="yes" select="$outputContext"/>      
+      </xsl:apply-templates>
     </xsl:variable>
     
     <xsl:sequence select="$result"/>
   </xsl:function>
-
-<!-- Returns a value for use in @id attributes from
+  
+  
+  <!-- =======================================
+       local:getId()
+       ======================================= -->
+  
+  <xsl:function name="local:getId" as="xs:string">
+    <xsl:param name="context" as="element()"/>
+    <xsl:sequence select="local:getId($context, 'summary')"/>
+  </xsl:function>  
+  
+  <!-- Returns a value for use in @id attributes from
       the context element.
     -->
   <xsl:function name="local:getId" as="xs:string">
     <xsl:param name="context" as="element()"/>
+    <xsl:param name="outputContext" as="xs:string"/>
+    <xsl:sequence select="local:getId($context, $outputContext, false())"/>
+    
+  </xsl:function>
 
+<!-- Returns a value for use in @id attributes from
+      the context element.
+    -->  
+  
+  <xsl:function name="local:getId" as="xs:string">
+    <xsl:param name="context" as="element()"/>
+    <xsl:param name="outputContext" as="xs:string"/>
+    <xsl:param name="doDebug" as="xs:boolean"/>
+    
     <xsl:variable name="result" as="xs:string">
       <xsl:apply-templates select="$context" mode="local:getId">
-        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        <xsl:with-param name="outputContext" as="xs:string" tunnel="yes" select="$outputContext"/>
       </xsl:apply-templates>
     </xsl:variable>
-    <xsl:sequence select="$result"/>
+    <xsl:sequence select="$result"/>    
   </xsl:function>
   
   <xsl:template mode="local:getId" match="*" as="xs:string" priority="-1">
@@ -72,7 +126,31 @@
     />    
     <xsl:sequence select="$result"/>
   </xsl:template>
+  
+  <xsl:template mode="local:getId" match="compounddef" as="xs:string">
+    <xsl:param name="outputContext" as="xs:string" tunnel="yes"/>
+    <xsl:choose>
+      <xsl:when test="$outputContext = ('data-structures')">
+        <xsl:sequence select="concat(@id, '_data-structures')"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:next-match/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 
+  <xsl:template mode="local:getId" match="sectiondef" as="xs:string">
+    <xsl:param name="outputContext" as="xs:string" tunnel="yes"/>
+    <xsl:choose>
+      <xsl:when test="$outputContext = ('full-topics')">
+        <xsl:sequence select="string(@kind)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:next-match/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
   <xsl:template mode="local:getKey" match="compound">
     <xsl:variable name="result" as="xs:string"
       select="translate(@refid, '/', '_')"

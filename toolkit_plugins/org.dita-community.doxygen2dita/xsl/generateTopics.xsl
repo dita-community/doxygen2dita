@@ -290,7 +290,7 @@
     -->
     <xsl:if
       test="innerclass">
-      <reference id="{local:getId(.)}_data-structures" outputclass="struct declSummary">
+      <reference id="{local:getId(., 'data-structures')}" outputclass="struct declSummary">
         <title>Data Structures</title>
         <refbody>
           <xsl:apply-templates select="innerclass" mode="summary"/>
@@ -1057,7 +1057,7 @@
     <xsl:if test="$memberType = 'unknown'">
       <xsl:message> - [WARN] Unknown member type for section type "<xsl:value-of select="@kind"/>"</xsl:message>
     </xsl:if>
-    <reference id="{@kind}">
+    <reference id="{local:getId(., 'full-topics')}">
       <title><xsl:value-of select="local:getLabelForKind(@kind, false())"/> Documentation</title>
       <xsl:apply-templates mode="fullTopics"
         select="../sectiondef/memberdef[@kind = $memberType]"
