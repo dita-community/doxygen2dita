@@ -25,7 +25,9 @@
     
     <!-- For <compound> elements, the @refid value functions as the path and filename -->
     <xsl:variable name="refID" as="xs:string"
-      select="$context/@refid"
+      select="if ($context/self::compound) 
+                 then $context/@refid 
+                 else local:getId($context, 'default')"
     />
     
     <xsl:variable name="result" as="xs:string"
@@ -98,10 +100,17 @@
   <xsl:template mode="local:getKey" match="compounddef">
     <xsl:param name="outputContext" tunnel="yes" as="xs:string"/>
     <xsl:param name="doDebug" tunnel="yes" as="xs:boolean"/>
-    
-    <xsl:variable name="result" as="xs:string"
-      select="translate(@id, '/', '_')"
-    />
+    <xsl:variable name="result" as="xs:string"      
+    >
+      <xsl:choose>
+        <xsl:when test="$outputContext = ('data-structures')">
+          <xsl:sequence select="local:getId(., $outputContext, $doDebug)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:sequence select="translate(@id, '/', '_')"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:sequence select="$result"/>
   </xsl:template>
   

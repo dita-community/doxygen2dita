@@ -9,6 +9,8 @@
   version="2.0">
   
   <xsl:template mode="generateTopicrefs" match="doxygenindex">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <xsl:variable name="context" as="element()" select="."/>
     <!-- Topics are grouped by @kind value -->
     <!-- @kind values in the order that they should be reflected in
@@ -37,7 +39,9 @@
           <xsl:apply-templates
             mode="#current"
             select="$context/compound[@kind = $kind]"
-          />          
+          >
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>          
         </xsl:when>
         <xsl:otherwise>
           <xsl:result-document href="{$resultURI}" format="topic">
@@ -56,7 +60,9 @@
             <xsl:apply-templates
               mode="#current"
               select="$context/compound[@kind = $kindsToMatch]"
-            />
+            >
+              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+            </xsl:apply-templates>
           </topicref>
         </xsl:otherwise>
       </xsl:choose>
@@ -64,10 +70,16 @@
   </xsl:template>
 
   <xsl:template mode="generateAncilaryTopicrefs" match="doxygenindex | doxygen">
-    <xsl:apply-templates mode="#current"></xsl:apply-templates>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:apply-templates mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template mode="generateTopicrefs" match="compound">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <xsl:variable name="topicURI" as="xs:string"
       select="local:getTopicUri(.)"
     />
@@ -86,7 +98,9 @@
     <xsl:variable name="sourceDocBodyText"
 
     >
-      <xsl:apply-templates mode="getBodyText" select="$sourceDoc/*"/>
+      <xsl:apply-templates mode="getBodyText" select="$sourceDoc/*">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
     </xsl:variable>
     <xsl:choose>
       <xsl:when test="$sourceDocBodyText = ''">
@@ -96,13 +110,17 @@
         <topicref keys="{$keyName}"  outputclass="{name(.)} {@kind}"
             href="{$topicURI}"
         >
-          <xsl:apply-templates mode="#current"/>
+          <xsl:apply-templates mode="#current">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>
         </topicref>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="compound">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <xsl:variable name="topicURI" as="xs:string"
       select="local:getTopicUri(.)"
     />
@@ -118,14 +136,52 @@
     <xsl:variable name="sourceDoc" as="document-node()?"
       select="document($sourceURI, .)"
     />
-    <xsl:apply-templates mode="#current" select="$sourceDoc/*"/>
+    <xsl:apply-templates mode="#current" select="$sourceDoc/*">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
 
+  <xsl:template mode="generateAncilaryTopicrefs" match="compounddef[@kind = ('file')]" priority="10">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+        
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] generateAncilaryTopicrefs: compounddef kind=file</xsl:message>
+      <xsl:message> + [DEBUG] generateAncilaryTopicrefs: data-structures key: <xsl:value-of select="local:getKey(., 'data-structures')"/></xsl:message>
+      <xsl:message> + [DEBUG] generateAncilaryTopicrefs: topic URI: <xsl:value-of select="local:getTopicUri(.)"/></xsl:message>
+      <xsl:message> + [DEBUG] generateAncilaryTopicrefs: topic ID: <xsl:value-of select="local:getId(., 'data-structures')"/></xsl:message>
+    </xsl:if>
+
+    <!-- File compounddefs have a synthesized data structures topic that contains
+         sections for each struct definition.
+      -->
+    <xsl:if test="innerclass">
+      <topicref keys="{local:getKey(., 'data-structures')}" 
+        href="{local:getTopicUri(.)}#{local:getId(., 'data-structures')}" 
+        toc="no"
+      />
+    </xsl:if>
+    <xsl:apply-templates mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  
   <xsl:template mode="generateAncilaryTopicrefs" match="compounddef">
-    <xsl:apply-templates mode="#current"/>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] generateAncilaryTopicrefs: compounddef default template: kind="<xsl:value-of select="@kind"/>"</xsl:message>
+    </xsl:if>
+    
+    <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
+    
+    <xsl:apply-templates mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template mode="generateAncilaryTopicrefs" match="programlisting">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <xsl:variable name="topicURI" as="xs:string"
       select="concat('topics/', local:getKey(.), '.dita')"
     />
@@ -133,33 +189,49 @@
       select="relpath:newFile($outdir, $topicURI)"
     />
     <xsl:result-document href="{$resultURI}" format="topic">
-      <xsl:apply-templates select="." mode="fullTopics"/>
+      <xsl:apply-templates select="." mode="fullTopics">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
     </xsl:result-document>
     <topicref toc="no" keys="{local:getKey(.)}" href="{$topicURI}"  outputclass="{name(.)} {@kind}"/>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="sectiondef">
-    <xsl:apply-templates mode="#current"/>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:apply-templates mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" priority="10"
     match="compounddef[@kind = ('union')]/sectiondef[@kind = ('public-attrib')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <!-- public-attrib sectiondefs don't make topics within union compounddefs -->
-    <xsl:apply-templates mode="#current"/>
+    <xsl:apply-templates mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" priority="10"
     match="sectiondef[@kind = ('user-defined')][memberdef[@kind = 'enum']]"
     >
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <!-- This sectiondef doesn't generate a topic as all the enum definitions
          collected under a generated topic with the ID "enum".         
       -->
-    <xsl:apply-templates mode="#current"/>
+    <xsl:apply-templates mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" 
       match="sectiondef[@kind = ('define', 'typedef', 'public-attrib', 'user-defined')]"
     >
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <xsl:variable name="topicID" as="xs:string" select="local:getId(.)"/>
     <xsl:variable name="topicURI" as="xs:string"
       select="concat('topics/', local:getKey(ancestor::compounddef), '.dita',
@@ -167,14 +239,20 @@
     />
 
     <topicref  toc="no" keys="{local:getKey(.)}" href="{$topicURI}" outputclass="{name(.)} {@kind}">
-      <xsl:apply-templates mode="#current"/>
+      <xsl:apply-templates mode="#current">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
     </topicref>
     
   </xsl:template>
 
-  <xsl:template mode="generateAncilaryTopicrefs" match="text()"/>
+  <xsl:template mode="generateAncilaryTopicrefs" match="text()">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>    
+  </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="memberdef[@kind = ('define', 'enum', 'typedef', 'function')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <!-- memberdefs are chunked within their containing compounddef's 
          topic.
       -->
@@ -205,6 +283,8 @@
   </xsl:template>
   
   <xsl:template mode="generateAncilaryTopicrefs" match="*" priority="-1">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <!-- Suppress by default as most elements do not generate ancilary topics -->
   </xsl:template>
 

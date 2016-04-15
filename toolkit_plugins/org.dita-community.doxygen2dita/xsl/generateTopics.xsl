@@ -333,7 +333,7 @@
       <xsl:message> + [DEBUG] summary: compounddef, id="<xsl:value-of select="@id"/>"</xsl:message>
     </xsl:if>
     
-    <section outputclass="declSummary {@kind}">
+    <section outputclass="declSummary {@kind}" id="{local:getId(., 'data-structures')}">
       <sectiondiv outputclass="kind"><xsl:value-of select="@kind"/></sectiondiv>
       <sectiondiv outputclass="name"><xsl:value-of select="compoundname"/></sectiondiv>
       <!-- Brief descriptions appear to have either zero or one paragraphs, so this
