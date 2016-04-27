@@ -66,7 +66,7 @@
           <tbody>
             <tr style="height: 56px;">
               <td id="projectlogo">
-                <img alt="Logo" src="../resources/images/OculusLogoSmall.png"/>
+                <!-- TODO: Figure out how to get the project logo -->
               </td>
               <td style="padding-left: 0.5em;">
                 <div id="projectname">
