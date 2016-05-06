@@ -14,6 +14,61 @@
        Copyright (c) 2015, 2016 DITA Community
        ====================================================================================== -->
   
+  <!-- Complete override of this template from dita2htmlImpl.xsl 
+  
+       This mode is only used for top-level topics.
+  -->
+  <xsl:template match="*" mode="chapterBody">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] chapterBody: <xsl:value-of select="@outputclass"/></xsl:message>
+      <xsl:message> + [DEBUG] chapterBody: File: <xsl:value-of select="document-uri(root(.))"/></xsl:message>
+    </xsl:if>
+    
+    <body>
+      <!-- Already put xml:lang on <html>; do not copy to body with commonattributes -->
+      <xsl:apply-templates select="*[contains(@class, ' ditaot-d/ditaval-startprop ')]/@outputclass" mode="add-ditaval-style"/>
+      <!--output parent or first "topic" tag's outputclass as class -->
+      <xsl:if test="@outputclass">
+        <xsl:attribute name="class"><xsl:value-of select="@outputclass" /></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="." mode="addAttributesToBody"/>
+      <xsl:call-template name="setidaname"/>
+      <xsl:value-of select="$newline"/>
+      <xsl:apply-templates select="*[contains(@class, ' ditaot-d/ditaval-startprop ')]" mode="out-of-line"/>
+      <xsl:call-template name="gen-user-header"/>  <!-- include user's XSL running header here -->
+      <xsl:call-template name="processHDR"/>
+      <xsl:if test="$INDEXSHOW = 'yes'">
+        <xsl:apply-templates select="/*/*[contains(@class, ' topic/prolog ')]/*[contains(@class, ' topic/metadata ')]/*[contains(@class, ' topic/keywords ')]/*[contains(@class, ' topic/indexterm ')] |
+          /dita/*[1]/*[contains(@class, ' topic/prolog ')]/*[contains(@class, ' topic/metadata ')]/*[contains(@class, ' topic/keywords ')]/*[contains(@class, ' topic/indexterm ')]"/>
+      </xsl:if>
+      <div class="headertitle">
+        <xsl:apply-templates select="*[contains(@class, ' topic/title ')]">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+      </div>
+      <div class="contents">
+        <xsl:apply-templates select="(*[contains(@class, ' topic/abstract ')] |
+          *[contains(@class, ' topic/shortdesc ')]),
+          *[contains(@class, ' topic/body ')]">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="*[contains(@class, ' topic/topic ')]">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+        <xsl:call-template name="gen-endnotes"/>    <!-- include footnote-endnotes -->
+      </div>
+      
+      <xsl:call-template name="gen-user-footer"/> <!-- include user's XSL running footer here -->
+      <xsl:call-template name="processFTR"/>      <!-- Include XHTML footer, if specified -->
+      <xsl:apply-templates select="*[contains(@class, ' ditaot-d/ditaval-endprop ')]" mode="out-of-line"/>
+    </body>
+    <xsl:text>&#x0a;</xsl:text>
+  </xsl:template>
+  
+  
+  
   <!-- Generate "more..." link to the main part of the topic's output. -->
   <xsl:template match="*['compounddef' = tokenize(@outputclass, ' ')]/*[contains(@class, ' topic/shortdesc ')]" 
     mode="outofline">
@@ -41,11 +96,40 @@
   <!-- Handle nested topics that require special output -->
   
   <xsl:template match="*[contains(@class, ' topic/topic ')]['detaileddescription' = tokenize(@outputclass, ' ')]">
-    <a id="details" name="details"/>
+    <a id="details" name="details">&#xa0;</a>
     <xsl:next-match/>
   </xsl:template>
   
-  <xsl:template match="*[contains(@class, ' topic/topic ')]['declSummary' = tokenize(@outputclass, ' ')]">
+  
+  <!-- Default processing for nested topics topics. 
+  
+       There is no containing wrapper for topics in the Doxygen
+       HTML, just an a element, then the title container, then
+       any contents.
+  -->
+  <xsl:template match="*[contains(@class, ' topic/topic ')]/*[contains(@class, ' topic/topic ')]" priority="0">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:apply-templates select="*[contains(@class, ' topic/title ')]">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+    <div class="textblock">
+      <xsl:apply-templates select="*[contains(@class, ' topic/body ')]">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
+    </div>
+    <xsl:apply-templates select="*[contains(@class, ' topic/topic ')]">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+    
+  </xsl:template>
+  
+  <xsl:template match="/*[contains(@class, ' topic/topic ')]/*[contains(@class, ' topic/topic ')]/*[contains(@class, ' topic/title ')]">
+     <h2 class="groupheader"><xsl:apply-templates/></h2> 
+   </xsl:template>
+  
+  
+  <xsl:template match="*[contains(@class, ' topic/topic ')][('declSummary') = tokenize(@outputclass, ' ')]">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <!-- Declaration summary output puts everything in a table, including the topic title,
@@ -239,14 +323,21 @@
   </xsl:template>
   
   <xsl:template mode="makeDeclSummaryTable" match="*[contains(@class, ' topic/sectiondiv ')][@outputclass = 'briefdescription']">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <!-- Do not generate a <div> in this context -->
-    <xsl:message> + [DEBUG] makeDeclSummaryTable: topic/sectiondiv, <xsl:value-of select="@outputclass"/> </xsl:message>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] makeDeclSummaryTable: topic/sectiondiv, <xsl:value-of select="@outputclass"/> </xsl:message>
+    </xsl:if>
     
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
   <xsl:template mode="makeDeclSummaryTable" match="*[contains(@class, ' topic/sectiondiv ')]/*[contains(@class, ' topic/p ')]">
-    <xsl:message> + [DEBUG] makeDeclSummaryTable: topic/p </xsl:message>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] makeDeclSummaryTable: topic/p </xsl:message>
+    </xsl:if>
     <!-- Do not generate a <p> in this context -->
     <xsl:apply-templates/>
   </xsl:template>
@@ -263,7 +354,7 @@
   </xsl:template>
   
   <xsl:template match="*[@outputclass = ('function')]/sectiondiv[@outputclass = 'briefdescription']" />    
-  <xsl:template match="*[@outputclass = ('function')]/sectiondiv[@outputclass = 'parameters']" />
+<!--  <xsl:template match="*[@outputclass = ('function')]/sectiondiv[@outputclass = 'parameters']" />-->
   <xsl:template match="*[@outputclass = ('function')]/sectiondiv[@outputclass = 'detaileddescription']" />       
   <!-- end Public Member Functions -->
 
@@ -281,7 +372,10 @@
   </xsl:template>
   
   <xsl:template mode="variablediv" match="*[@outputclass = ('variable')]">
-    <xsl:message> + [DEBUG] variablediv: Handling <xsl:value-of select="concat(name(..), '/', name(.))"/></xsl:message>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] variablediv: Handling <xsl:value-of select="concat(name(..), '/', name(.))"/></xsl:message>
+    </xsl:if>
     <tr class="memitem:a0cbc54a3238dea8110e869897b93a4b9">
       <xsl:choose>
         <xsl:when test="sectiondiv/sectiondiv[@outputclass = 'type']/xref">
