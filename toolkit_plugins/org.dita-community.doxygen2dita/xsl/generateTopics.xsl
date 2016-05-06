@@ -1123,7 +1123,11 @@
   </xsl:template>
   
   <xsl:template match="parametername">
-   <parmname><xsl:apply-templates/></parmname>
+   <parmname>
+     <xsl:if test="@direction">
+       <xsl:attribute name="outputclass" select="concat('direction_', @direction)"/>
+     </xsl:if>
+     <xsl:apply-templates/></parmname>
   </xsl:template>
   
   <xsl:template match="parameterdescription">
@@ -1335,7 +1339,7 @@ NOTE: The result-document logic is
   </xsl:template>
   
   <xsl:template mode="makeMemberdefDocTitle" match="type | name | declname | defname | initializer | argsstring">
-    <ph outputclass="{name(.)}"><xsl:apply-templates/></ph>
+    <xsl:text> </xsl:text><ph outputclass="{name(.)}"><xsl:apply-templates/></ph>
   </xsl:template>
   
   <xsl:template mode="makeMemberdefDocTitle" match="param">
