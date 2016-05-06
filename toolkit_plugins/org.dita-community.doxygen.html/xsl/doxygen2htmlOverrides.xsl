@@ -433,6 +433,208 @@
   <!-- end Member Function Documentation -->
   
   
+  <!-- ========================================================
+       Detailed documentation topics
+       ======================================================== -->
+  
+  <!-- Child reference entries within groups within the main reference item.
+    
+       These topics should be member definitions.
+       
+    -->
+  <xsl:template match="/*[contains(@class, ' reference/reference ')]/*[contains(@class, ' reference/reference ')]/
+    *[contains(@class, ' reference/reference ')][('typedef', 'define', 'enum', 'function') = tokenize(@outputclass, ' ')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <a class="anchor" id="{@id}">&#xa0;</a>
+    <div class="memitem">
+      <div class="memproto">
+        <xsl:apply-templates select="*[contains(@class, ' topic/title ')]" mode="memproto">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+      </div>
+      <div class="memdoc">
+        <xsl:apply-templates select="*[contains(@class, ' topic/shortdesc ')],*[contains(@class, ' topic/body ')]"
+          mode="memitem"
+        />
+      </div>
+    </div>
+    
+    <!-- There don't appear to ever be topics within member items but you never know. -->
+    <xsl:apply-templates select="*[contains(@class, ' topic/topic ')]">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  
+  <xsl:template mode="memproto" match="*[contains(@class, ' topic/title ')]">
+    <table class="memname">
+      <tbody>
+        <tr>
+          <!-- FIXME: This is not sufficient to match the Doxygen result but will do for now. -->
+          <td class="memname"><xsl:apply-templates/></td>
+        </tr>
+      </tbody>
+    </table>
+  </xsl:template>
+  
+  <xsl:template mode="memproto" match="*[contains(@class, ' topic/topic ')]['function' = tokenize(@outputclass, ' ')]/*[contains(@class, ' topic/title ')]"
+      priority="10"
+    >
+    <table class="memname">
+      <tbody>
+        <!-- The function signature is organized into multiple rows, one for each parameter --> 
+        <tr>
+          <td class="memname">
+            <xsl:apply-templates select="ph[@outputclass = 'type']"/>
+            <xsl:text> </xsl:text>
+            <xsl:apply-templates select="ph[@outputclass = 'name']"/>
+          </td>
+          <td><xsl:text>(</xsl:text></td>
+          <xsl:variable name="firstParam" as="element()?"
+            select="(ph[@outputclass = 'param'])[1]"
+          />
+          <xsl:choose>
+            <xsl:when test="$firstParam and $firstParam/following-sibling::ph[@outputclass = 'param']">
+              <xsl:apply-templates select="$firstParam" mode="#current"/>
+            </xsl:when>
+            <xsl:when test="$firstParam">
+              <!-- Put closing ")" in the last cell of the table in this row. -->
+              <xsl:apply-templates mode="#current" select="$firstParam/ph[@outputclass = 'type']"/>
+              <td class="paramname">
+                <xsl:apply-templates select="$firstParam/ph[@outputclass = 'declname']"/>
+                <!-- Note space before parenthesis -->
+                <xsl:text> )</xsl:text>
+              </td>
+              
+            </xsl:when>
+            <xsl:otherwise>
+              <td>&#xa0;</td>
+              <td><xsl:text>)</xsl:text></td>
+            </xsl:otherwise>
+          </xsl:choose>
+        </tr>
+        <xsl:for-each select="ph[@outputclass = 'param']">
+          <xsl:choose>
+            <xsl:when test="position() = 1">
+              <!-- SKip, in first row -->
+            </xsl:when>
+            <xsl:otherwise>
+              <tr>
+                <td class="paramkey">&#xa0;</td>
+                <td>&#xa0;</td>
+                <xsl:apply-templates select="." mode="#current"/>
+              </tr>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:for-each>
+        <xsl:if test="count(ph[@outputclass = 'param']) gt 1">
+          <tr>
+            <td>&#xa0;</td>
+            <td><xsl:text>)</xsl:text></td>
+            <td>&#xa0;</td>
+            <td>&#xa0;</td>
+          </tr>
+        </xsl:if>
+      </tbody>
+    </table>
+  </xsl:template>
+  
+  <xsl:template mode="memproto" match="ph[@outputclass = 'param']">
+    <xsl:apply-templates mode="#current" select="ph"/>
+  </xsl:template>
+
+  <xsl:template mode="memproto" match="ph[@outputclass = 'param']/ph[@outputclass = 'type']">
+    <td class="paramtype"><xsl:apply-templates/></td>
+  </xsl:template>
+
+  <xsl:template mode="memproto" match="ph[@outputclass = 'param']/ph[@outputclass = 'declname']">
+    <td class="paramname">
+      <xsl:apply-templates/>
+      <xsl:if test="../following-sibling::ph[@outputclass = 'param']">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+    </td>
+  </xsl:template>
+  
+  <xsl:template mode="memitem" match="*[contains(@class, ' topic/body ')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+        
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] memitem: topic/body</xsl:message>
+    </xsl:if>
+    
+    <xsl:apply-templates mode="#current">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+    
+  </xsl:template>
+  
+  <xsl:template mode="memitem" match="*[contains(@class, ' topic/section ')][@spectitle = 'Parameters']">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] section, spectitle="Parameters"</xsl:message>
+    </xsl:if>
+    
+    <dl class="params">
+      <dt>Parameters</dt>
+      <dd>
+        <xsl:apply-templates mode="#current"/>
+      </dd>
+    </dl>
+  </xsl:template>
+  
+  <!-- Parameter list in default mode, which should apply to detailed
+       descriptions for member definitions.
+    -->
+  <xsl:template mode="memitem" match="*[contains(@class, ' pr-d/parml ')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] memitem: <xsl:value-of select="concat(name(..), '/', name(.))"/></xsl:message>
+    </xsl:if>
+    
+    <table class="params">
+      <tbody>
+        <xsl:apply-templates select="*[contains(@class, ' pr-d/plentry ')]" mode="#current"/>
+      </tbody>
+    </table>
+  </xsl:template>
+  
+  <xsl:template mode="memitem" match="*[contains(@class, ' pr-d/plentry ')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] memitem: <xsl:value-of select="concat(name(..), '/', name(.))"/></xsl:message>
+    </xsl:if>
+
+    <tr>
+      <td class="paramdir"><xsl:value-of select="if (pt/parmname/@outputclass = 'direction_out') then '[out]' else '[in]'"/></td>
+      <xsl:apply-templates/>
+    </tr>
+  </xsl:template>
+  
+  
+  <xsl:template match="*[contains(@class, ' pr-d/pt ')]">
+    <td class="paramname"><xsl:apply-templates/></td>
+  </xsl:template>
+  <xsl:template match="*[contains(@class, ' pr-d/pd ')]">
+    <td><xsl:apply-templates 
+       select="*[contains(@class, ' topic/p ')][1]/node(), 
+                *[contains(@class, ' topic/p ')][position() gt 1]"/></td>
+  </xsl:template>
+  
+  <xsl:template mode="memitem" match="*" priority="-1">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] memitem: Fallback: <xsl:value-of select="concat(name(..), '/', name(.))"/></xsl:message>
+    </xsl:if>
+    
+    <xsl:apply-templates select="."/>
+  </xsl:template>
+  
+  
   
   <xsl:template match="*[@outputclass = ('collaborationgraph')]" />
 
