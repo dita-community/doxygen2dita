@@ -1386,9 +1386,11 @@ NOTE: The result-document logic is
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] makeMemberdefSeeAlsoSection: applying next match</xsl:message>
     </xsl:if>
-    <xsl:next-match>
-      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-    </xsl:next-match>
+    <p>
+      <xsl:apply-templates>
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
+    </p>
   </xsl:template>
 
   <xsl:template mode="makeMemberdefEnumeratorSection" match="memberdef">
