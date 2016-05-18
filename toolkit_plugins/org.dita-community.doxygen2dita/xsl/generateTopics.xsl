@@ -1405,7 +1405,7 @@ NOTE: The result-document logic is
     
     <xsl:if test="count($rows) > 0">
       <section outputclass="enumerators">
-        <table
+        <table outputclass="fieldtable"
           frame="all"
           rowsep="1"
           colsep="1">
@@ -1448,10 +1448,10 @@ NOTE: The result-document logic is
     <!-- Don't create a row if there's no brief description -->
     <xsl:if test="not(matches(briefdescription, '^\s*$'))">
       <row id="{@id}">
-        <entry>
+        <entry outputclass="fieldname">
           <xsl:apply-templates select="name" mode="makeMemberdefDocTitle"/>
         </entry>
-        <entry>
+        <entry outputclass="fielddoc">
           <xsl:apply-templates select="briefdescription, detaileddescription"
             mode="#current"
             >

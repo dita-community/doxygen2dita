@@ -645,4 +645,17 @@
     </b>
   </xsl:template>
 
+  <xsl:template match="*[contains(@class, ' topic/pre ')]" name="topic.pre" mode="#default pre-fmt">
+    <xsl:apply-templates select="*[contains(@class, ' ditaot-d/ditaval-startprop ')]" mode="out-of-line"/>
+    <xsl:call-template name="spec-title-nospace"/>
+    <pre>
+    <xsl:call-template name="commonattributes"/>
+    <xsl:attribute name="class" select="string-join(('fragment', name(.), @outputclass), ' ')"/>
+    <xsl:call-template name="setscale"/>
+    <xsl:call-template name="setidaname"/>
+    <xsl:apply-templates/>
+  </pre>
+    <xsl:apply-templates select="*[contains(@class, ' ditaot-d/ditaval-endprop ')]" mode="out-of-line"/>
+    <xsl:value-of select="'&#x0a;'"/>
+  </xsl:template>
 </xsl:stylesheet>
