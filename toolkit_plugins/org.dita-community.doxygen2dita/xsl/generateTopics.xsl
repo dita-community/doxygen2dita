@@ -1091,7 +1091,11 @@
     </section>
   </xsl:template>
 
-  <xsl:template match="para/programlisting" mode="#default makeMemberdefEnumeratorSection" priority="10">
+  <xsl:template match="para/programlisting" priority="10" 
+    mode="#default 
+          makeMemberdefEnumeratorSection 
+          makeMemberdefExampleCodeSection"
+  >
     <codeblock>
       <xsl:apply-templates mode="#current"/>
     </codeblock>
@@ -1304,7 +1308,9 @@ NOTE: The result-document logic is
           <xsl:apply-templates select="briefdescription, detaileddescription" mode="makeMemberdefDocTopic"/>
         </section>
         <xsl:apply-templates select="." mode="makeMemberdefParametersSection"/>
+        <xsl:apply-templates select="." mode="makeMemberdefNoteSection"/>
         <xsl:apply-templates select="." mode="makeMemberdefReturnsSection"/>
+        <xsl:apply-templates select="." mode="makeMemberdefExampleCodeSection"/>
         <xsl:apply-templates select="." mode="makeMemberdefSeeAlsoSection"/>
         <xsl:apply-templates select="." mode="makeMemberdefEnumeratorSection"/>
       </refbody>
@@ -1358,6 +1364,28 @@ NOTE: The result-document logic is
   <xsl:template mode="makeMemberdefParametersSection" match="parameterlist">
     <section spectitle="Parameters">
       <xsl:apply-templates select="."/>
+    </section>
+  </xsl:template>
+  
+  <xsl:template mode="makeMemberdefNoteSection" match="memberdef">
+    <xsl:apply-templates mode="#current" select="detaileddescription/para/simplesect[@kind = ('note')]"/>
+  </xsl:template>
+  
+  <xsl:template mode="makeMemberdefNoteSection" match="simplesect[@kind = ('note')]">
+    <section spectitle="Note" outputclass="note">
+      <xsl:apply-templates/>
+    </section>
+  </xsl:template>
+  
+  <xsl:template mode="makeMemberdefExampleCodeSection" match="memberdef">
+    <!-- No program listing, don't make a section. -->
+  </xsl:template>
+
+  <xsl:template mode="makeMemberdefExampleCodeSection" match="memberdef[detaileddescription/para/programlisting]" priority="10">
+    <section spectitle="Example code">
+      <xsl:apply-templates mode="makeMemberdefExampleCodeSection" 
+        select="detaileddescription/para/programlisting"
+      />
     </section>
   </xsl:template>
   

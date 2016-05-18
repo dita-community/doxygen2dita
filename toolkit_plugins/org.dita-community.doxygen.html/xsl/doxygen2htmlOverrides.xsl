@@ -584,6 +584,63 @@
     </dl>
   </xsl:template>
   
+  <xsl:template mode="memitem" match="*[contains(@class, ' topic/section ')][@spectitle = 'See also']">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] section, spectitle="See also"</xsl:message>
+    </xsl:if>
+    
+    <dl class="section see">
+      <dt>See also</dt>
+      <dd>
+        <xsl:apply-templates mode="#current"/>
+      </dd>
+    </dl>
+  </xsl:template>
+  
+  <xsl:template mode="memitem" match="*[contains(@class, ' topic/section ')][@spectitle = 'Return']">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] section, spectitle="Return"</xsl:message>
+    </xsl:if>
+    
+    <dl class="section return">
+      <dt>Returns</dt>
+      <dd>
+        <xsl:apply-templates mode="#current"/>
+      </dd>
+    </dl>
+  </xsl:template>
+  
+  <xsl:template mode="memitem" match="*[contains(@class, ' topic/section ')][@spectitle = 'Note']">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] section, spectitle="Note"</xsl:message>
+    </xsl:if>
+    
+    <dl class="section note">
+      <dt>Note</dt>
+      <dd>
+        <xsl:apply-templates mode="#current"/>
+      </dd>
+    </dl>
+  </xsl:template>
+  
+  <xsl:template mode="memitem" match="*[contains(@class, ' topic/section ')][@spectitle = 'Example code']">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] section, spectitle="Example code"</xsl:message>
+    </xsl:if>
+    
+    <!-- FIXME: Get string from @spectitle value -->
+    <p><b>Example code</b></p>
+    <xsl:apply-templates/>
+  </xsl:template>
+  
   <!-- Parameter list in default mode, which should apply to detailed
        descriptions for member definitions.
     -->
