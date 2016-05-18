@@ -1167,7 +1167,9 @@
       <title><xsl:value-of select="local:getLabelForKind(@kind, false())"/> Documentation</title>
       <xsl:apply-templates mode="fullTopics"
         select="../sectiondef/memberdef[@kind = $memberType]"
-      />
+      >
+        <xsl:sort select="name"/>
+      </xsl:apply-templates>
     </reference>
   </xsl:template>
 
@@ -1326,10 +1328,10 @@ NOTE: The result-document logic is
    </title>
   </xsl:template>
   
-  <xsl:template mode="makeMemberdefDocTitle" match="memberdef[@kind = 'define']" priority="10">
+<!--  <xsl:template mode="makeMemberdefDocTitle" match="memberdef[@kind = 'define']" priority="10">
    <title><xsl:text>#define </xsl:text><xsl:apply-templates select="type, name, argsstring" mode="#current"/></title>
   </xsl:template>
-  
+-->  
   <xsl:template mode="makeMemberdefDocTitle" match="memberdef[@kind = 'typedef']" priority="10">
    <title><xsl:text>typedef </xsl:text><xsl:apply-templates select="type, name, argsstring" mode="#current"/></title>
   </xsl:template>
