@@ -1093,11 +1093,18 @@
 
   <xsl:template match="para/programlisting" priority="10" 
     mode="#default 
-          makeMemberdefEnumeratorSection 
-          makeMemberdefExampleCodeSection"
+          makeMemberdefEnumeratorSection "
   >
     <codeblock>
       <xsl:apply-templates mode="#current"/>
+    </codeblock>
+  </xsl:template>
+  
+  <xsl:template match="para/programlisting" priority="10" 
+    mode="makeMemberdefExampleCodeSection"
+    >
+    <codeblock>
+      <xsl:apply-templates/>
     </codeblock>
   </xsl:template>
   
@@ -1527,6 +1534,10 @@ NOTE: The result-document logic is
   
   <xsl:template mode="data" match="@refid | @refkind" >
     <!-- Not useful in the output -->
+  </xsl:template>
+  
+  <xsl:template match="codeline/highlight[sp]" priority="20">
+    <xsl:apply-templates/>    
   </xsl:template>
   
   <xsl:template match="codeline/highlight[string(.) = '']" priority="10">    

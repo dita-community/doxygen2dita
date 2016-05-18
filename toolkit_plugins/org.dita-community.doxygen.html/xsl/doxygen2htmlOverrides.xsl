@@ -715,4 +715,8 @@
     <xsl:apply-templates select="*[contains(@class, ' ditaot-d/ditaval-endprop ')]" mode="out-of-line"/>
     <xsl:value-of select="'&#x0a;'"/>
   </xsl:template>
+  
+  <xsl:template match="*[contains(@class, ' topic/ph ')][tokenize(@outputclass, ' ') = ('sp')]">
+    <xsl:text>&#x20;</xsl:text>
+  </xsl:template>
 </xsl:stylesheet>
