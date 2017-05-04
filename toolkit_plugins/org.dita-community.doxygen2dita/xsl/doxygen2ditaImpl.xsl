@@ -21,7 +21,13 @@
        
        ================================================================================= -->
 
-  <xsl:import href="plugin:org.dita-community.common.xslt:xsl/relpath_util.xsl"/>
+  <!-- NOTE: relpath_util.xsl is copied from the org.dita-community.common.xslt Toolkit plugin,
+             which is where it's maintained. It's here to remove the need to have that plugin
+             deployed or otherwise have a OT-specific entity resolution catalog set up just to
+             get that one module.
+    -->
+  <xsl:import href="relpath_util.xsl"/>
+  
   <xsl:import href="fallbackTemplates.xsl"/>
   <xsl:import href="generateKeydefs.xsl"/>
   <xsl:import href="generateTopicrefs.xsl"/>

@@ -19,3 +19,4 @@ To produce Doxygen-style HTML output do the following:
 2. Apply the transformation type "doxygen-html" to the root map
 
 The plugin includes the Doxygen-provided CSS and Javascript as a convenience. 
+
